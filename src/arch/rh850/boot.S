@@ -12,6 +12,9 @@
     movea lo(\sym), \reg, \reg
 .endm
 
+.extern platform
+.extern clear_rwx_regions
+
 /**
  * The following code MUST be at the base of the image, as this is bao's entrypoint. Therefore
  * .boot section must also be the first in the linker script. DO NOT implement any code before the
@@ -96,6 +99,12 @@ sync_loop:
     mov 0xFFFC402F0, r20
     mov 0x1, r21
     st.w r21, 0[r20]    /* IHVCFG.IHVE = 0x1 */
+
+    /* initialize RAM defined in plat desc */
+    LOAD_ADDR platform, r15
+    LOAD_ADDR _data_vma_start, r16
+    LOAD_ADDR _data_lma_start, r17
+    jarl clear_rwx_regions, lp
 
     /* copy non-text sections from flash to ram */
     LOAD_ADDR _data_lma_start, r15
@@ -194,7 +203,6 @@ _boot_clear_exit:
  * r15: start of the source region
  * r16: end of the source region
  * r17: start of the destination region
- * uses r18
  */
 _copy_data:
     ld.w 0[r15], r18

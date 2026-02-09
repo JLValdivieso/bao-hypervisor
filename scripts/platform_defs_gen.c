@@ -46,6 +46,9 @@ int main() {
     if (platform.cpu_master_fixed) {
         printf("#define CPU_MASTER_FIXED (%ld)\n", platform.cpu_master);
     }
+
+    printf("#define MEM_REGION_PERMS_RWX %d\n", MEM_RWX);
+
     // Call arch specific platform defines generator
     arch_platform_defs();
     return 0;

@@ -27,4 +27,12 @@ __attribute__((used)) static void platform_defines(void)
 {
     DEFINE_OFFSET(PLAT_CPUNUM_OFF, struct platform, cpu_num);
     DEFINE_OFFSET(PLAT_ARCH_OFF, struct platform, arch);
+
+    DEFINE_OFFSET(PLATFORM_REGION_NUM_OFF, struct platform, region_num);
+    DEFINE_OFFSET(PLATFORM_REGIONS_PTR_OFF, struct platform, regions);
+
+    DEFINE_OFFSET(MEM_REGION_BASE_OFF, struct mem_region, base);
+    DEFINE_OFFSET(MEM_REGION_SIZE_OFF, struct mem_region, size);
+    DEFINE_OFFSET(MEM_REGION_PERMS_OFF, struct mem_region, perms);
+    DEFINE_SIZE(MEM_REGION_SIZEOF, struct mem_region);
 }
