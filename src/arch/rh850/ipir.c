@@ -163,14 +163,14 @@ bool vipir_emul_handler(struct emul_access* acc)
 
     /* Ignore access */
     if (ignore) {
-        if (!acc->write && acc->arch.op == BWOP_NO) {
+        if (!acc->write && acc->arch.op == EMUL_ARCH_BWOP_NO) {
             vcpu_writereg(vcpu, acc->reg, 0);
         }
         return true;
     }
 
     /* Translate access */
-    if (acc->arch.op != BWOP_NO) {
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
         uint8_t bitop_mask = 0;
         for (size_t i = 0; i < vm->cpu_num; i++) {
             if ((1U << i) & acc->arch.byte_mask) {
@@ -180,8 +180,8 @@ bool vipir_emul_handler(struct emul_access* acc)
             }
         }
 
-        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint8_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
+        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
+        *tgt_reg = (uint8_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long write_val = 0;

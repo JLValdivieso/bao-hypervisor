@@ -117,7 +117,7 @@ static void data_abort(void)
         emul.reg_width = ds;
         emul.sign_ext = ~u;
 
-        emul.arch.op = (enum bitwise_op)bit_op;
+        emul.arch.op = (enum emul_arch_bwop)bit_op;
         emul.arch.byte_mask = mask;
 
         if (handler(&emul)) {

@@ -7,18 +7,18 @@
 #define __ARCH_EMUL_H__
 
 /* The order of the operations can NOT be modified */
-enum bitwise_op { BWOP_NO, BWOP_SET1, BWOP_NOT1, BWOP_CLR1, BWOP_TST1 };
+enum emul_arch_bwop { EMUL_ARCH_BWOP_NO, EMUL_ARCH_BWOP_SET1, EMUL_ARCH_BWOP_NOT1, EMUL_ARCH_BWOP_CLR1, EMUL_ARCH_BWOP_TST1 };
 
 struct emul_access_arch {
-    enum bitwise_op op;
+    enum emul_arch_bwop op;
     unsigned long byte_mask;
 };
 
 struct emul_access;
-unsigned long bitwise_op_get_acc_bitop_mask(struct emul_access* acc);
-void bitwise_op_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask);
+unsigned long emul_arch_bwop_get_acc_bitop_mask(struct emul_access* acc);
+void emul_arch_bwop_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask);
 
-unsigned long bitwise_op_set_val(struct emul_access* acc, unsigned long cur_val,
+unsigned long emul_arch_bwop_set_val(struct emul_access* acc, unsigned long cur_val,
     unsigned long bitop_mask);
 
 #endif /* __ARCH_EMUL_H__ */

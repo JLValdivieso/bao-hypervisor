@@ -51,10 +51,10 @@ static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, uns
     }
 
     /* bit manipulation instruction */
-    if (acc->arch.op != BWOP_NO) {
-        uint16_t bitop_mask = (uint16_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint16_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
+        uint16_t bitop_mask = (uint16_t)emul_arch_bwop_get_acc_bitop_mask(acc);
+        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
+        *tgt_reg = (uint16_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         *tgt_reg =
@@ -90,10 +90,10 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
     }
 
     /* bit manipulation instruction */
-    if (acc->arch.op != BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
+        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc);
+        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
+        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long write_val = *tgt_reg;
@@ -157,10 +157,10 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
 
     /* we use 0xFFFF0000 to mask access to virtualization configuration */
     /* bit manipulation instruction */
-    if (acc->arch.op != BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc) & 0xFFFF0000;
-        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
+        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc) & 0xFFFF0000;
+        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
+        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long virt_peid = val & 0x7UL;
@@ -203,7 +203,7 @@ static void emulate_intc_fibd_access(struct emul_access* acc, uint32_t mask)
     size_t addr_off = acc->addr & 0x3UL;
     volatile uint32_t* tgt_reg = &(intc1_hw->FIBD);
 
-    if (acc->arch.op != BWOP_NO || acc->write) {
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO || acc->write) {
         /* FIBD register can not be written/modified by any guest */
     } else {
         unsigned long val = 0;
@@ -249,10 +249,10 @@ static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, ui
     }
 
     /* bit manipulation instruction */
-    if (acc->arch.op != BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
+    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
+        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc);
+        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
+        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         *tgt_reg = ((val & mask) << (addr_off * 8)) | (*tgt_reg & ~(mask << (addr_off * 8)));
@@ -317,7 +317,7 @@ bool vintc1_emul_handler(struct emul_access* acc)
     }
 
     /* Ignore access */
-    if (!acc->write && acc->arch.op == BWOP_NO) {
+    if (!acc->write && acc->arch.op == EMUL_ARCH_BWOP_NO) {
         vcpu_writereg(cpu()->vcpu, acc->reg, 0);
     }
 
@@ -363,7 +363,7 @@ bool vintc2_emul_handler(struct emul_access* acc)
     }
 
     /* Ignore access */
-    if (!acc->write && acc->arch.op == BWOP_NO) {
+    if (!acc->write && acc->arch.op == EMUL_ARCH_BWOP_NO) {
         vcpu_writereg(cpu()->vcpu, acc->reg, 0);
     }
 
