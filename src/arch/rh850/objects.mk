@@ -3,7 +3,6 @@
 
 cpu-objs-y+=aborts.o
 cpu-objs-y+=boot.o
-cpu-objs-y+=clear_rwx_regions.o
 cpu-objs-y+=cache.o
 cpu-objs-y+=cpu.o
 cpu-objs-y+=exceptions.o
