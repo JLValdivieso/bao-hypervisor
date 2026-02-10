@@ -14,7 +14,7 @@ unsigned long bitwise_op_get_acc_bitop_mask(struct emul_access* acc)
     return acc->arch.byte_mask << (addr_off * 8);
 }
 
-void bitwise_op_set_gmpse(unsigned long cur_val, unsigned long bitop_mask)
+void bitwise_op_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask)
 {
     unsigned long psw = get_gmpsw();
     if (cur_val & bitop_mask) {
