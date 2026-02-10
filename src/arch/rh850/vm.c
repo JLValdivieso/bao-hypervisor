@@ -39,7 +39,6 @@ void vcpu_arch_reset(struct vcpu* vcpu, vaddr_t entry)
     vcpu->arch.started = vcpu->id == 0 ? true : false;
 
     /* Bao fixes the VMID as SPID to isolate VM memory regions */
-    vcpu->regs.spid = vm->id;
     srs_gmspid_write(vm->id);
     srs_gmspidlist_write(0x0);
 

@@ -79,7 +79,6 @@ struct arch_regs {
     } gp_regs;
     // Basic system registers
     unsigned long pc;
-    unsigned long spid;
 };
 
 void vcpu_arch_entry(void);
