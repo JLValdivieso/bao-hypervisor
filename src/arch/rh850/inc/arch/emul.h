@@ -7,7 +7,13 @@
 #define __ARCH_EMUL_H__
 
 /* The order of the operations can NOT be modified */
-enum emul_arch_bwop { EMUL_ARCH_BWOP_NO, EMUL_ARCH_BWOP_SET1, EMUL_ARCH_BWOP_NOT1, EMUL_ARCH_BWOP_CLR1, EMUL_ARCH_BWOP_TST1 };
+enum emul_arch_bwop {
+    EMUL_ARCH_BWOP_NO,
+    EMUL_ARCH_BWOP_SET1,
+    EMUL_ARCH_BWOP_NOT1,
+    EMUL_ARCH_BWOP_CLR1,
+    EMUL_ARCH_BWOP_TST1
+};
 
 struct emul_access_arch {
     enum emul_arch_bwop op;

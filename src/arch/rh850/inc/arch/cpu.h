@@ -11,7 +11,6 @@
 #include <bitmap.h>
 #include <srs.h>
 
-
 extern cpuid_t CPU_MASTER;
 
 struct cpu_arch {

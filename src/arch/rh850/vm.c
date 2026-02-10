@@ -161,7 +161,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     }
 
     /* Notify physical CPUs, if any */
-    if(notify != 0){
+    if (notify != 0) {
         for (cpuid_t c = 0; c < platform.cpu_num; c++) {
             if (notify & (1UL << c)) {
                 interrupts_cpu_sendipi(c);
