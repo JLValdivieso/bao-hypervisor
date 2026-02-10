@@ -5,8 +5,6 @@
 
 #include <platform.h>
 
-irqid_t plat_ints[2048];
-
 struct platform platform = {
 
     .cpu_num = 4,
