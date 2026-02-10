@@ -103,60 +103,64 @@ void vcpu_writepc(struct vcpu* vcpu, unsigned long val)
 bool vbootctrl_emul_handler(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
-    struct vm* vm = vcpu->vm;
     unsigned long notify = 0;
+    struct vcpu* waking_vcpu = NULL;
 
     /* Translate access */
     if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
         /* this access is fairly unique, so it's not practical to put behind
          * arch emul */
-        size_t virt_id = INVALID_CPUID;
-
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & acc->arch.byte_mask) {
-                virt_id = vm->vcpus[i].id;
-                if (!vm->vcpus[i].arch.started) {
-                    notify |= (1UL << vm->vcpus[i].phys_id);
+                waking_vcpu = vm_get_vcpu(vcpu->vm, i);
+                if(waking_vcpu == NULL){
+                    continue;
                 }
-                break;
-            }
-        }
-
-        if (virt_id != INVALID_CPUID) {
-            unsigned long psw = srs_gmpsw_read();
-            if (vm->vcpus[virt_id].arch.started) {
-                srs_gmpsw_write(psw & ~PSW_Z);
-            } else {
-                srs_gmpsw_write(psw | PSW_Z);
-            }
-
-            switch (acc->arch.op) {
-                case EMUL_ARCH_BWOP_SET1:
-                    vm->vcpus[virt_id].arch.started = true;
-                    break;
-                case EMUL_ARCH_BWOP_NOT1:
-                    vm->vcpus[virt_id].arch.started = true;
-                    break;
-                    /* CLR1 accesses are ignored */
-                    /* TST1 only modifies the PSW.Z flag */
-                default:
-                    break;
+                unsigned long psw = srs_gmpsw_read();
+                if (waking_vcpu->arch.started) {
+                    srs_gmpsw_write(psw & ~PSW_Z);
+                } else {
+                    srs_gmpsw_write(psw | PSW_Z);
+                }
+                if (!waking_vcpu->arch.started) {
+                    notify |= (1UL << waking_vcpu->phys_id);
+                    switch (acc->arch.op) {
+                        case EMUL_ARCH_BWOP_SET1:
+                            waking_vcpu->arch.started = true;
+                            break;
+                        case EMUL_ARCH_BWOP_NOT1:
+                            waking_vcpu->arch.started = true;
+                            break;
+                            /* CLR1 accesses are ignored */
+                            /* TST1 only modifies the PSW.Z flag */
+                        default:
+                            break;
+                    }
+                }
             }
         }
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & val) {
-                if (!vm->vcpus[i].arch.started) {
-                    notify |= 1UL << vm->vcpus[i].phys_id;
+                waking_vcpu = vm_get_vcpu(vcpu->vm, i);
+                if(waking_vcpu == NULL){
+                    continue;
                 }
-                vm->vcpus[i].arch.started = true;
+                if (!waking_vcpu->arch.started) {
+                    notify |= (1UL << waking_vcpu->phys_id);
+                    waking_vcpu->arch.started = true;
+                }
             }
         }
     } else {
         unsigned long val = 0;
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            if (vm->vcpus[i].arch.started) {
+            struct vcpu* awake_vcpu = vm_get_vcpu(vcpu->vm, i);
+            if(awake_vcpu == NULL){
+                continue;
+            }
+            if (awake_vcpu->arch.started) {
                 val |= 1UL << i;
             }
         }
