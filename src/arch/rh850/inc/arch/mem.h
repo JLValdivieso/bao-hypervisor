@@ -10,8 +10,6 @@
 
 #define MPU_ARCH_MAX_NUM_ENTRIES (32)
 
-struct addr_space;
-struct mp_region;
 
 typedef union {
     struct {
