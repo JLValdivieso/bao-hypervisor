@@ -144,92 +144,17 @@ void abort(void)
     unsigned long cause = (psw & (0x1UL << 7)) ? (get_feic() & 0xFFFFUL) : (get_eiic() & 0xFFFFUL);
 
     switch (cause) {
-        case 0x01:
-            WARNING("Exception: RESET - Reset input\n");
-            break;
-
-        case 0x1C:
-            WARNING("Exception: SYSERR - System error (context saving error)\n");
-            break;
-
-        case 0x1D:
-            WARNING("Exception: SYSERR - System error (error prior to register bank "
-                    "restoration)\n");
-            break;
-
-        case 0x60:
-            WARNING("Exception: RIE - Reserved instruction exception\n");
-            break;
-
-        case 0x71:
-            WARNING("Exception: FPE - FPU exception (precise)\n");
-            break;
-
-        case 0x75:
-            WARNING("Exception: FXE - FXU exception (precise)\n");
-            break;
-
-        case 0x80:
-        case 0x81:
-        case 0x82:
-            WARNING("Exception: UCPOP - Coprocessor unusable exception\n");
-            break;
-
-        case 0x90:
-            WARNING("Exception: MIP - Memory protection exception due to instruction fetching\n");
-            break;
         case 0x91:
             data_abort();
-            break;
-        case 0x95:
-            WARNING("Exception: MDP - Memory protection exception (interrupt table reference "
-                    "method)\n");
-            break;
-        case 0x98:
-            WARNING("Exception: MIP - Guest memory protection exception due to instruction "
-                    "fetching\n");
-            break;
+            __attribute__((fallthrough));
         case 0x99:
             data_abort();
             break;
-        case 0x9D:
-            WARNING("Exception: MDP - Guest memory protection exception (interrupt table "
-                    "reference method)\n");
-            break;
-
-        case 0xA0:
-            WARNING("Exception: PIE - Privilege instruction exception\n");
-            break;
-
-        case 0xC0:
-            WARNING("Exception: MAE - Misalignment exception\n");
-            break;
-
-        case 0xE0:
-            WARNING("Exception: FENMI - FENMI interrupt\n");
-            break;
-
         default:
-
-            if (cause >= 0xF0 && cause <= 0xFF) {
-                WARNING("FEINT - FEINT interrupt");
-            } else if (cause >= 0x1000 && cause <= 0x17FF) {
-                WARNING("EIINT - User interrupt");
-            } else if (cause >= 0x10 && cause <= 0x1F) {
-                WARNING("SYSERR - System error (instruction fetch error)");
-            } else if (cause >= 0xf000 && cause <= 0xf01f) {
+            if (cause >= 0xf000 && cause <= 0xf01f) {
                 hvtrap();
-            } else if (cause >= 0x8000 && cause <= 0x80FF) {
-                WARNING("SYSCALL - System call");
-            } else if (cause >= 0x31 && cause <= 0x3F) {
-                WARNING("FETRAP - FE level trap");
-            } else if (cause >= 0x40 && cause <= 0x4F) {
-                WARNING("TRAP0 - EI level trap 0");
-            } else if (cause >= 0x50 && cause <= 0x5F) {
-                WARNING("TRAP1 - EI level trap 1");
             } else {
-                WARNING("Exception: Unknown exception code: 0x%X\n", cause);
+                WARNING("Exception not handled. Cause: 0x%lx", cause);
             }
-            break;
     }
 }
