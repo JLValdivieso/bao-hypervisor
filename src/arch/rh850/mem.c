@@ -23,46 +23,24 @@ void mpu_enable(void)
 
 bool mpu_map(struct addr_space* as, struct mp_region* mem, bool locked)
 {
-    bool failed = true;
     UNUSED_ARG(as);
     UNUSED_ARG(locked);
 
-    /* Add region to MPU */
-    if (!mpu_add_region(mem, false)) {
-        ERROR("failed to register mpu entry");
-    } else {
-        failed = false;
-    }
-    return !failed;
+    return mpu_add_region(mem, false);
 }
 
 bool mpu_unmap(struct addr_space* as, struct mp_region* mem)
 {
-    bool failed = true;
     UNUSED_ARG(as);
-
-    if (!mpu_remove_region(mem)) {
-        ERROR("failed to register mpu entry");
-    } else {
-        failed = false;
-    }
-
-    return !failed;
+    return mpu_remove_region(mem);
 }
 
 bool mpu_update(struct addr_space* as, struct mp_region* mpr)
 {
-    bool failed = true;
     UNUSED_ARG(as);
+    UNUSED_ARG(mpr);
 
-    /* Remove region */
-    if (!mpu_update_region(mpr)) {
-        ERROR("failed to register mpu entry");
-    } else {
-        failed = false;
-    }
-
-    return !failed;
+    return mpu_update_region(mpr);
 }
 
 bool mpu_perms_compatible(unsigned long perms1, unsigned long perms2)
