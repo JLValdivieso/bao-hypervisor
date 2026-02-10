@@ -11,6 +11,11 @@
 #include <arch/emul.h>
 #include <srs.h>
 
+#define MDP_HOST (0x91)
+#define MDP_GUEST (0x99)
+#define HVTRAP_LOW (0xf000)
+#define HVTRAP_HIGH (0xf01f)
+
 #define F8_OPCODE        (0x3EUL)
 #define F9_OPCODE        (0x3FUL)
 #define F9_SUBOPCODE     (0x1CUL)
@@ -144,14 +149,14 @@ void abort(void)
     unsigned long cause = (psw & (0x1UL << 7)) ? (srs_feic_read() & 0xFFFFUL) : (srs_eiic_read() & 0xFFFFUL);
 
     switch (cause) {
-        case 0x91:
-            data_abort();
-            __attribute__((fallthrough));
-        case 0x99:
+        case MDP_GUEST:
             data_abort();
             break;
+        case MDP_HOST:
+            ERROR("Host data abort");
+            break;
         default:
-            if (cause >= 0xf000 && cause <= 0xf01f) {
+            if (cause >= HVTRAP_LOW && cause <= HVTRAP_HIGH) {
                 hvtrap();
             } else {
                 WARNING("Exception not handled. Cause: 0x%lx", cause);
