@@ -62,7 +62,7 @@ static mpid_t mpu_entry_allocate_hyp(void)
 static inline void mpu_set_hbe(unsigned long hbe)
 {
     unsigned long mpcfg = get_mpcfg();
-    mpcfg = (mpcfg & ~MPCFG_HBE_MASK) | hbe;
+    mpcfg = (mpcfg & ~MPCFG_HBE_MASK) | (hbe << MPCFG_HBE_OFF);
     set_mpcfg(mpcfg);
 }
 
