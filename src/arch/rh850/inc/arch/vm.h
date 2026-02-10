@@ -83,8 +83,6 @@ struct arch_regs {
 };
 
 void vcpu_arch_entry(void);
-void vcpu_restore_state(struct vcpu* vcpu);
-void vcpu_save_state(struct vcpu* vcpu);
 
 static inline void vcpu_arch_inject_hw_irq(struct vcpu* vcpu, irqid_t id)
 {

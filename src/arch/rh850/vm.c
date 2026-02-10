@@ -97,18 +97,6 @@ void vcpu_writepc(struct vcpu* vcpu, unsigned long val)
     vcpu->regs.pc = val;
 }
 
-void vcpu_restore_state(struct vcpu* vcpu)
-{
-    UNUSED_ARG(vcpu);
-    ERROR("%s not implemented", __func__);
-}
-
-void vcpu_save_state(struct vcpu* vcpu)
-{
-    UNUSED_ARG(vcpu);
-    ERROR("%s not implemented", __func__);
-}
-
 bool vbootctrl_emul_handler(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
