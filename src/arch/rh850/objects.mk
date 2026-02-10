@@ -15,4 +15,4 @@ cpu-objs-y+=mpu.o
 cpu-objs-y+=vintc.o
 cpu-objs-y+=vm.o
 cpu-objs-y+=vmm.o
-cpu-objs-y+=arch_emul.o
+cpu-objs-y+=emul.o
