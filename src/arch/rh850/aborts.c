@@ -95,17 +95,15 @@ static unsigned long read_instruction(unsigned long pc)
     return inst;
 }
 
-static void data_abort(void)
+static void decode_access_function(struct emul_access *acc, unsigned long addr)
 {
-    unsigned long mea = srs_mea_read();
     unsigned long mei = srs_mei_read();
 
-    unsigned int len = MEI_GET_LEN(mei);
     unsigned int reg = MEI_GET_REG(mei);
     unsigned int ds = MEI_GET_DS(mei);
     unsigned int u = MEI_GET_U(mei);
     unsigned int rw = MEI_GET_RW(mei);
-    vaddr_t addr = mea;
+    unsigned int len = 0;
 
     /* Decode possible bitwise instruction */
     unsigned long inst = read_instruction(vcpu_readpc(cpu()->vcpu));
@@ -124,21 +122,30 @@ static void data_abort(void)
         bit_op = ((inst & SUB9_MASK) >> SUB9_SHIFT) + 1;
     }
 
+    acc->addr = addr;
+    acc->width = len;
+    acc->write = rw ? true : false;
+    acc->reg = reg;
+    acc->reg_width = ds;
+    acc->sign_ext = ~u;
+
+    acc->arch.op = (enum emul_arch_bwop)bit_op;
+    acc->arch.byte_mask = mask;
+}
+
+static void data_abort(void)
+{
+    unsigned long mea = srs_mea_read();
+    unsigned long mei = srs_mei_read();
+    vaddr_t addr = mea;
+
     emul_handler_t handler = vm_emul_get_mem(cpu()->vcpu->vm, addr);
     if (handler != NULL) {
         struct emul_access emul;
-        emul.addr = addr;
-        emul.width = len;
-        emul.write = rw ? true : false;
-        emul.reg = reg;
-        emul.reg_width = ds;
-        emul.sign_ext = ~u;
-
-        emul.arch.op = (enum emul_arch_bwop)bit_op;
-        emul.arch.byte_mask = mask;
+        decode_access_function(&emul, addr);
 
         if (handler(&emul)) {
-            unsigned long pc_step = len;
+            unsigned long pc_step = MEI_GET_LEN(mei);
             vcpu_writepc(cpu()->vcpu, vcpu_readpc(cpu()->vcpu) + pc_step);
         } else {
             ERROR("Data abort emulation failed (0x%x)", addr);
