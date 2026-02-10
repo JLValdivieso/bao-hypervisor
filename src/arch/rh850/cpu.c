@@ -28,14 +28,6 @@ void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
         }
     }
 
-    /* clear exception registers */
-    srs_eipc_write(0x0);
-    srs_fepc_write(0x0);
-    srs_mea_write(0x0);
-    srs_mei_write(0x0);
-    srs_eiic_write(0x0);
-    srs_feic_write(0x0);
-
     /* set xxPSW.EBV */
     srs_eipsw_write(0x8000);
     srs_fepsw_write(0x8000);
