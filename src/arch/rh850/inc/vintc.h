@@ -7,10 +7,6 @@
 #define __VINTC_H__
 
 #include <vm.h>
-#include <interrupts.h>
-
-struct vcpu;
-struct emul_access;
 
 void vintc_init(struct vm* vm);
 void vintc_inject(struct vcpu* vcpu, irqid_t int_id);
