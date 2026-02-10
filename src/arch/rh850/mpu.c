@@ -47,6 +47,8 @@ static mpid_t mpu_entry_allocate_hyp(void)
 {
     mpid_t reg_num = INVALID_MPID;
     for (mpid_t i = (mpid_t)mpu_num_entries(); i > 0; i--) {
+        /* mpid_t is unsigned so we can't test for negative number.
+         * Subtract 1 to get the index */
         mpid_t idx = i - 1;
         if (bitmap_get(cpu()->arch.mpu_hyp.bitmap, idx) == 0) {
             bitmap_set(cpu()->arch.mpu_hyp.bitmap, idx);
