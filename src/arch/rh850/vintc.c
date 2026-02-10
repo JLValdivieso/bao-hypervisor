@@ -268,7 +268,7 @@ static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, ui
     }
 }
 
-bool vintc1_emul_handler(struct emul_access* acc)
+static bool vintc1_emul_handler(struct emul_access* acc)
 {
     size_t acc_offset = acc->addr - platform.arch.intc.intc1_addr;
     unsigned long mask =
@@ -324,7 +324,7 @@ bool vintc1_emul_handler(struct emul_access* acc)
     return true;
 }
 
-bool vintc2_emul_handler(struct emul_access* acc)
+static bool vintc2_emul_handler(struct emul_access* acc)
 {
     size_t acc_offset = acc->addr - platform.arch.intc.intc2_addr;
     unsigned long mask =
@@ -370,25 +370,25 @@ bool vintc2_emul_handler(struct emul_access* acc)
     return true;
 }
 
-bool vintif_emul_handler(struct emul_access* acc)
+static bool vintif_emul_handler(struct emul_access* acc)
 {
     UNUSED_ARG(acc);
     ERROR("%s not implemented", __func__);
 }
 
-bool veint_emul_handler(struct emul_access* acc)
+static bool veint_emul_handler(struct emul_access* acc)
 {
     UNUSED_ARG(acc);
     ERROR("%s not implemented", __func__);
 }
 
-bool vfenc_emul_handler(struct emul_access* acc)
+static bool vfenc_emul_handler(struct emul_access* acc)
 {
     UNUSED_ARG(acc);
     ERROR("%s not implemented", __func__);
 }
 
-bool vfeinc_emul_handler(struct emul_access* acc)
+static bool vfeinc_emul_handler(struct emul_access* acc)
 {
     UNUSED_ARG(acc);
     ERROR("%s not implemented", __func__);
