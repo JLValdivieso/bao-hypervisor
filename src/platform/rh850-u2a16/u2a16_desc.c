@@ -114,7 +114,7 @@ struct platform platform = {
     Index:  |0 |1 |2 |3 |4 |5  |6  |7  |8  |9  |10 |
     Groups: |G2|G3|G4|G5|G6|G10|G17|G20|G21|G22|G24|
 */
-uint16_t port_reg_val[PLAT_NUM_PORT_CFG_REGS][PLAT_NUM_PORT_GROUPS] = {
+const uint16_t port_reg_val[PLAT_NUM_PORT_CFG_REGS][PLAT_NUM_PORT_GROUPS] = {
     /*|   G2   |   G3   |   G4   |   G5   |   G6   |   G10   |  G17  |   G20  |   G21  |   G22  |
        G24   |*/
     /* P */ { 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0800U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
@@ -187,7 +187,7 @@ uint16_t port_reg_val[PLAT_NUM_PORT_CFG_REGS][PLAT_NUM_PORT_GROUPS] = {
     Index:  |0 |1 |2 |3 |4 |
     Groups: |G0|G1|G2|G3|G4|
 */
-uint16_t aport_reg_val[PLAT_NUM_APORT_CFG_REGS][PLAT_NUM_APORT_GROUPS] = {
+const uint16_t aport_reg_val[PLAT_NUM_APORT_CFG_REGS][PLAT_NUM_APORT_GROUPS] = {
     /*|   G0   |   G1   |   G2   |   G3   |   G4    |*/
     /* AP */ { 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U },
     /* APM */ { 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U },
