@@ -16,11 +16,11 @@ unsigned long emul_arch_bwop_get_acc_bitop_mask(struct emul_access* acc)
 
 void emul_arch_bwop_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask)
 {
-    unsigned long psw = get_gmpsw();
+    unsigned long psw = srs_gmpsw_read();
     if (cur_val & bitop_mask) {
-        set_gmpsw(psw & ~PSW_Z);
+        srs_gmpsw_write(psw & ~PSW_Z);
     } else {
-        set_gmpsw(psw | PSW_Z);
+        srs_gmpsw_write(psw | PSW_Z);
     }
 }
 

@@ -22,7 +22,7 @@ struct cpu_arch {
 
 static inline struct cpu* cpu(void)
 {
-    return (struct cpu*)get_fewr();
+    return (struct cpu*)srs_fewr_read();
 }
 
 static inline void snooze(void)

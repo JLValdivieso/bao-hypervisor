@@ -14,7 +14,7 @@ void vm_arch_init(struct vm* vm, const struct vm_config* vm_config)
     UNUSED_ARG(vm_config);
 
     /* All VMs use MPID5 for memory protection */
-    set_mpid5(vm->id);
+    srs_mpid5_write(vm->id);
 
     vintc_init(vm);
     vipir_init(vm);
@@ -34,32 +34,32 @@ void vcpu_arch_reset(struct vcpu* vcpu, vaddr_t entry)
     memset(&vcpu->regs, 0, sizeof(struct arch_regs));
 
     vcpu_writepc(vcpu, entry);
-    set_eipc(entry);
+    srs_eipc_write(entry);
 
     vcpu->arch.started = vcpu->id == 0 ? true : false;
 
     /* Bao fixes the VMID as SPID to isolate VM memory regions */
     vcpu->regs.spid = vm->id;
-    set_gmspid(vm->id);
-    set_gmspidlist(0x0);
+    srs_gmspid_write(vm->id);
+    srs_gmspidlist_write(0x0);
 
-    set_gmmpm(GMMPM_GMPE);
+    srs_gmmpm_write(GMMPM_GMPE);
 
-    unsigned long eipswh = get_eipswh() & ~EIPSWH_GPID_MASK;
-    set_eipswh(eipswh | (vm->id << EIPSWH_GPID_OFF));
+    unsigned long eipswh = srs_eipswh_read() & ~EIPSWH_GPID_MASK;
+    srs_eipswh_write(eipswh | (vm->id << EIPSWH_GPID_OFF));
 
-    unsigned long fepswh = get_fepswh() & ~FEPSWH_GPID_MASK;
-    set_fepswh(fepswh | (vm->id << FEPSWH_GPID_OFF));
+    unsigned long fepswh = srs_fepswh_read() & ~FEPSWH_GPID_MASK;
+    srs_fepswh_write(fepswh | (vm->id << FEPSWH_GPID_OFF));
 
-    set_gmpeid(vcpu->id);
+    srs_gmpeid_write(vcpu->id);
 
     /* clear guest-context exception registers */
-    set_gmeipc(0x0);
-    set_gmfepc(0x0);
-    set_gmmea(0x0);
-    set_gmmei(0x0);
-    set_gmeiic(0x0);
-    set_gmfeic(0x0);
+    srs_gmeipc_write(0x0);
+    srs_gmfepc_write(0x0);
+    srs_gmmea_write(0x0);
+    srs_gmmei_write(0x0);
+    srs_gmeiic_write(0x0);
+    srs_gmfeic_write(0x0);
 
     vintc_vcpu_reset(vcpu);
 }
@@ -120,11 +120,11 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
         }
 
         if (virt_id != INVALID_CPUID) {
-            unsigned long psw = get_gmpsw();
+            unsigned long psw = srs_gmpsw_read();
             if (vm->vcpus[virt_id].arch.started) {
-                set_gmpsw(psw & ~PSW_Z);
+                srs_gmpsw_write(psw & ~PSW_Z);
             } else {
-                set_gmpsw(psw | PSW_Z);
+                srs_gmpsw_write(psw | PSW_Z);
             }
 
             switch (acc->arch.op) {

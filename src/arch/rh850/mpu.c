@@ -11,7 +11,7 @@
 
 static inline size_t mpu_num_entries(void)
 {
-    unsigned long mpcfg = get_mpcfg();
+    unsigned long mpcfg = srs_mpcfg_read();
     size_t num = (mpcfg & 0x1f) + 1;
     return num;
 }
@@ -25,20 +25,20 @@ static void mpu_entry_set(mpid_t mpid, struct mp_region* mpr)
 {
     unsigned long lim = mpr->base + mpr->size - 4;
 
-    set_mpidx(mpid & MPIDX_IDX_MASK);
-    set_mpla(mpr->base & MPLA_MASK);
-    set_mpua(lim & MPUA_MASK);
-    set_mpat(mpr->mem_flags.raw);
+    srs_mpidx_write(mpid & MPIDX_IDX_MASK);
+    srs_mpla_write(mpr->base & MPLA_MASK);
+    srs_mpua_write(lim & MPUA_MASK);
+    srs_mpat_write(mpr->mem_flags.raw);
 
     syncp();
 }
 
 static void mpu_entry_clear(mpid_t mpid)
 {
-    set_mpidx(mpid & MPIDX_IDX_MASK);
-    set_mpla(0);
-    set_mpua(0);
-    set_mpat(0);
+    srs_mpidx_write(mpid & MPIDX_IDX_MASK);
+    srs_mpla_write(0);
+    srs_mpua_write(0);
+    srs_mpat_write(0);
 
     syncp();
 }
@@ -61,9 +61,9 @@ static mpid_t mpu_entry_allocate_hyp(void)
 
 static inline void mpu_set_hbe(unsigned long hbe)
 {
-    unsigned long mpcfg = get_mpcfg();
+    unsigned long mpcfg = srs_mpcfg_read();
     mpcfg = (mpcfg & ~MPCFG_HBE_MASK) | (hbe << MPCFG_HBE_OFF);
-    set_mpcfg(mpcfg);
+    srs_mpcfg_write(mpcfg);
 }
 
 bool mpu_add_region(struct mp_region* reg, bool locked)
@@ -89,13 +89,13 @@ bool mpu_add_region(struct mp_region* reg, bool locked)
 
 static void mpu_entry_get_region(mpid_t mpid, struct mp_region* mpe)
 {
-    set_mpidx(mpid & MPIDX_IDX_MASK);
+    srs_mpidx_write(mpid & MPIDX_IDX_MASK);
     syncp();
 
-    unsigned long base = get_mpla();
-    unsigned long limit = get_mpua();
+    unsigned long base = srs_mpla_read();
+    unsigned long limit = srs_mpua_read();
 
-    mpe->mem_flags.raw = get_mpat();
+    mpe->mem_flags.raw = srs_mpat_read();
     mpe->base = base;
     mpe->size = (limit - base) + 4;
     mpe->as_sec = SEC_UNKNOWN;
@@ -165,8 +165,8 @@ bool mpu_update_region(struct mp_region* mpr)
 
 static inline bool mpu_entry_valid(mpid_t mpid)
 {
-    set_mpidx(mpid & MPIDX_IDX_MASK);
-    unsigned long attr = get_mpat();
+    srs_mpidx_write(mpid & MPIDX_IDX_MASK);
+    unsigned long attr = srs_mpat_read();
     unsigned long valid_bit = (attr & (1 << 7)) >> 7;
 
     return !!valid_bit;
@@ -188,18 +188,18 @@ void mpu_arch_init(void)
     mpu_set_hbe(mpu_num_entries());
 
     /* At this point we configure MPIDs as PEID to perform platform initialization */
-    unsigned long peid = get_peid();
-    set_mpid6(peid);
-    set_spid(peid);
+    unsigned long peid = srs_peid_read();
+    srs_mpid6_write(peid);
+    srs_spid_write(peid);
 }
 
 void mpu_arch_enable(void)
 {
-    set_mpm(MPM_SVP | MPM_MPE);
+    srs_mpm_write(MPM_SVP | MPM_MPE);
 }
 
 void mpu_arch_disable(void)
 {
-    unsigned long mpm = get_mpm() & ~MPM_MPE;
-    set_mpm(mpm);
+    unsigned long mpm = srs_mpm_read() & ~MPM_MPE;
+    srs_mpm_write(mpm);
 }

@@ -66,13 +66,13 @@ static unsigned long read_instruction(unsigned long pc)
     }
 
     /* Enable Hyp access to VM space */
-    set_mpid7(HYP_SPID);
-    fence_sync();
+    srs_mpid7_write(HYP_SPID);
+    fence_sync_write();
 
     inst = (unsigned long)(*pc_ptr | (*(pc_ptr + 1) << 16));
 
     /* Disable Hyp access to VM space */
-    set_mpid7(HYP_AUX_SPID);
+    srs_mpid7_write(HYP_AUX_SPID);
     fence_sync();
 
     return inst;
@@ -80,8 +80,8 @@ static unsigned long read_instruction(unsigned long pc)
 
 static void data_abort(void)
 {
-    unsigned long mea = get_mea();
-    unsigned long mei = get_mei();
+    unsigned long mea = srs_mea_read();
+    unsigned long mei = srs_mei_read();
 
     unsigned int len = MEI_GET_LEN(mei);
     unsigned int reg = MEI_GET_REG(mei);
@@ -140,8 +140,8 @@ static void hvtrap(void)
 
 void abort(void)
 {
-    unsigned long psw = get_psw();
-    unsigned long cause = (psw & (0x1UL << 7)) ? (get_feic() & 0xFFFFUL) : (get_eiic() & 0xFFFFUL);
+    unsigned long psw = srs_psw_read();
+    unsigned long cause = (psw & (0x1UL << 7)) ? (srs_feic_read() & 0xFFFFUL) : (srs_eiic_read() & 0xFFFFUL);
 
     switch (cause) {
         case 0x91:

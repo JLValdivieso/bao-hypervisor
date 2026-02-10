@@ -14,13 +14,13 @@ void vmm_arch_init(void)
 
     /* configure Hypervisor MPIDs for memory protection */
     mpu_arch_disable();
-    set_mpid6(HYP_SPID);
-    set_mpid7(HYP_AUX_SPID);
-    set_spid(HYP_SPID);
+    srs_mpid6_write(HYP_SPID);
+    srs_mpid7_write(HYP_AUX_SPID);
+    srs_spid_write(HYP_SPID);
     mpu_arch_enable();
 
-    set_gmcfg(GMCFG_GCU1 | GMCFG_GCU0 | GMCFG_GSYSE | GMCFG_HMP);
+    srs_gmcfg_write(GMCFG_GCU1 | GMCFG_GCU0 | GMCFG_GSYSE | GMCFG_HMP);
 
-    set_eipswh(EIPSWH_GM);
-    set_fepswh(FEPSWH_GM);
+    srs_eipswh_write(EIPSWH_GM);
+    srs_fepswh_write(FEPSWH_GM);
 }

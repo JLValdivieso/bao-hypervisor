@@ -29,19 +29,19 @@ void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
     }
 
     /* clear exception registers */
-    set_eipc(0x0);
-    set_fepc(0x0);
-    set_mea(0x0);
-    set_mei(0x0);
-    set_eiic(0x0);
-    set_feic(0x0);
+    srs_eipc_write(0x0);
+    srs_fepc_write(0x0);
+    srs_mea_write(0x0);
+    srs_mei_write(0x0);
+    srs_eiic_write(0x0);
+    srs_feic_write(0x0);
 
     /* set xxPSW.EBV */
-    set_eipsw(0x8000);
-    set_fepsw(0x8000);
+    srs_eipsw_write(0x8000);
+    srs_fepsw_write(0x8000);
 
     /* Set snooze time */
-    set_snzcfg(SNZCFG_PERIOD);
+    srs_snzcfg_write(SNZCFG_PERIOD);
 }
 
 static void reset_stack_and_jump(void* stack_base, void (*jmp_target)(void))
