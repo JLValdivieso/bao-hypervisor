@@ -11,9 +11,6 @@
 #include <bitmap.h>
 #include <srs.h>
 
-#define SNZCFG_PERIOD          (uint8_t)(~0)
-
-#define CPU_HAS_EXTENSION(EXT) (DEFINED(EXT))
 
 extern cpuid_t CPU_MASTER;
 

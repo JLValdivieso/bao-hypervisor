@@ -10,6 +10,8 @@
 
 cpuid_t CPU_MASTER __attribute__((section(".datanocopy")));
 
+#define SNZCFG_PERIOD          (uint8_t)(~0)
+
 /* Perform architecture dependent cpu cores initializations */
 void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
 {
