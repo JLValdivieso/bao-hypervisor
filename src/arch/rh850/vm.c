@@ -74,7 +74,8 @@ unsigned long vcpu_readreg(struct vcpu* vcpu, unsigned long reg)
         ERROR("reading register out of bounds");
     }
 
-    return vcpu->regs.gp_regs.r[reg];
+    /* r0 is always 0x0 */
+    return reg == 0 ? 0 : vcpu->regs.gp_regs.r[reg];
 }
 
 void vcpu_writereg(struct vcpu* vcpu, unsigned long reg, unsigned long val)
@@ -83,7 +84,10 @@ void vcpu_writereg(struct vcpu* vcpu, unsigned long reg, unsigned long val)
         ERROR("writing register out of bounds");
     }
 
-    vcpu->regs.gp_regs.r[reg] = val;
+    /* r0 is always 0x0 */
+    if (reg != 0){
+        vcpu->regs.gp_regs.r[reg] = val;
+    }
 }
 
 unsigned long vcpu_readpc(struct vcpu* vcpu)
