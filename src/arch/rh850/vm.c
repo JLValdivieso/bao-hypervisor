@@ -106,6 +106,12 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     unsigned long notify = 0;
     struct vcpu* waking_vcpu = NULL;
 
+    if(acc->addr & 0x3){
+        /* Aligment is not 32bit, do not emulate */
+        WARNING("Unaligned access to BOOTCTRL");
+        return true;
+    }
+
     /* Translate access */
     if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
         /* this access is fairly unique, so it's not practical to put behind
