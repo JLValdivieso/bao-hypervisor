@@ -3,7 +3,7 @@
  * Copyright (c) Bao Project and Contributors. All rights reserved.
  */
 
-#include <interrupts.h>
+#include <bao.h>
 
 #ifndef __ARCH_IPIR_H__
 #define __ARCH_IPIR_H__
@@ -13,9 +13,6 @@
 
 /* We reserve the last IPIR channel for Bao */
 #define IPI_HYP_IRQ_ID    (IPIR_CH3_IRQ_ID)
-
-struct vcpu;
-struct emul_access;
 
 struct ipir_chann {
     uint8_t IPInEN;
