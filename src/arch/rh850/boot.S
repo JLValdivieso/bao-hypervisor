@@ -73,7 +73,6 @@ _reset_handler:
     /* check if current CPU is CPU_MASTER */
     cmp r11, r10
     bne _clear_cpu
-    /* bne _check_barrier */
 
     /* enable interrupt virtualization support,
     recommended at CPU initialization after reset */

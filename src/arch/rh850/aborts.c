@@ -87,7 +87,6 @@ static void data_abort(void)
     unsigned int reg = MEI_GET_REG(mei);
     unsigned int ds = MEI_GET_DS(mei);
     unsigned int u = MEI_GET_U(mei);
-    /* unsigned int itype = MEI_GET_ITYPE(mei); */
     unsigned int rw = MEI_GET_RW(mei);
     vaddr_t addr = mea;
 
