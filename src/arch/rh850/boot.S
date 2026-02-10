@@ -45,25 +45,6 @@ _reset_handler:
     stsr 0, r10, 2               /* get current CPU ID from PEID */
 
     mov CPU_MASTER_FIXED, r11   /* identify master cpu */
-    /* TODO: Support for non-fixed master cpu*/
-
-    /**
-     * TODO: Remove.
-     * This loop serves as a workaround for the fact that, when using e2studio to debug execution,
-     * all cores start executing simultaneously, instead of following the BOOTCTRL mechanism
-     */
-sync_loop:
-    /*
-    mov 3, r20
-    cmp r10, r20
-    be sync_loop
-    mov 2, r20
-    cmp r10, r20
-    be sync_loop
-    mov 1, r20
-    cmp r10, r20
-    be sync_loop
-    //*/
 
     /* set PSW.EBV and PSW.ID */
     mov 0x8020, r20
@@ -130,30 +111,6 @@ sync_loop:
     mov PLAT_DATA_ADDR, r20
     LOAD_ADDR data_addr, r21
     st.w r20, 0 [r21]
-
-/*
-_check_barrier:
-    # Initialize CPU barrier
-    ## Write 0x3 to BR0EN
-    mov 0xFFFB8004, r20
-    mov 0x3, r21 # TODO: create macro for BR0EN macro
-    st.b r21, 0[r20]
-    # ## Write 0x1 to BR0INIT
-    # mov 0xFFFB8000, r20
-    # mov 0x1, r21
-    # st.b r21, 0[r20]
-    ## Write 0x1 to BR0CHKS
-    mov 0xFFFB8100, r20
-    mov 0x1, r21
-    st.b r21, 0[r20]
-
-_poll_barrier:
-    # Poll BR0SYNCS
-    mov 0xFFFB8104, r20
-    ld.bu 0[r20], r21
-    cmp r0, r21
-    be _poll_barrier
-*/
 
 _clear_cpu:
     /* clear CPUn struct */

@@ -20,11 +20,6 @@ static inline void mpu_lock_entry(mpid_t mpid)
     bitmap_set(cpu()->arch.mpu_hyp.locked, mpid);
 }
 
-// static inline bool mpu_entry_locked(mpid_t mpid)
-// {
-//     return !!bitmap_get(cpu()->arch.mpu_hyp.locked, mpid);
-// }
-
 static void mpu_entry_set(mpid_t mpid, struct mp_region* mpr)
 {
     unsigned long lim = mpr->base + mpr->size - 4;
@@ -42,31 +37,6 @@ static void mpu_entry_clear(mpid_t mpid)
     set_mpua(0);
     set_mpat(0);
 }
-
-// // TODO: add hyp mpu entry counter to prevent guest mpu entries from
-// // spiling into hyp entries
-// static mpid_t mpu_entry_allocate_guest(void)
-// {
-//     mpid_t reg_num = INVALID_MPID;
-//     for (mpid_t i = 0; i < (mpid_t)mpu_num_entries(); i++) {
-//         mpid_t idx = i - 1;
-//         if (bitmap_get(cpu()->arch.mpu_hyp.bitmap, idx) == 0) {
-//             bitmap_set(cpu()->arch.mpu_hyp.bitmap, idx);
-//             reg_num = idx;
-
-//             // Update HBE
-//             unsigned long mpcfg = get_mpcfg();
-
-//             // spiling into hyp entries
-//             unsigned long hbe = (reg_num + 1) << MPCFG_HBE_OFF;
-//             mpcfg = (mpcfg & ~MPCFG_HBE_MASK) | hbe;
-//             set_mpcfg(mpcfg);
-//             break;
-//         }
-//     }
-
-//     return reg_num;
-// }
 
 static mpid_t mpu_entry_allocate_hyp(void)
 {
