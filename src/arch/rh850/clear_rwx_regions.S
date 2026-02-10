@@ -38,6 +38,7 @@ clear_rwx_regions:
 _loop_region:
     /* region->perms */
     ld.w    MEM_REGION_PERMS_OFF[r18], r26
+    /* Assumes RWX permission is 0x0 */
     cmp     r0, r26
     bne     _skip_clear           /* perms != MEM_RWX => skip */
 
