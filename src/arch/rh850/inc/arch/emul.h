@@ -19,7 +19,7 @@ struct emul_access_arch {
 struct emul_access;
 struct vm;
 unsigned long bitwise_op_get_acc_bitop_mask(struct emul_access* acc);
-void bitwise_op_set_gmpse(unsigned long cur_val, unsigned long bitop_mask);
+void bitwise_op_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask);
 
 unsigned long bitwise_op_set_val(struct emul_access* acc, unsigned long cur_val,
     unsigned long bitop_mask);

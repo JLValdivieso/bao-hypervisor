@@ -53,7 +53,7 @@ static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, uns
     /* bit manipulation instruction */
     if (acc->arch.op != BWOP_NO) {
         uint16_t bitop_mask = (uint16_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpse((unsigned long)*tgt_reg, bitop_mask);
+        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
         *tgt_reg = (uint16_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
@@ -92,7 +92,7 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
     /* bit manipulation instruction */
     if (acc->arch.op != BWOP_NO) {
         uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpse((unsigned long)*tgt_reg, bitop_mask);
+        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
         *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
@@ -159,7 +159,7 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
     /* bit manipulation instruction */
     if (acc->arch.op != BWOP_NO) {
         uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc) & 0xFFFF0000;
-        bitwise_op_set_gmpse((unsigned long)*tgt_reg, bitop_mask);
+        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
         *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
@@ -251,7 +251,7 @@ static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, ui
     /* bit manipulation instruction */
     if (acc->arch.op != BWOP_NO) {
         uint32_t bitop_mask = (uint32_t)bitwise_op_get_acc_bitop_mask(acc);
-        bitwise_op_set_gmpse((unsigned long)*tgt_reg, bitop_mask);
+        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
         *tgt_reg = (uint32_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);

@@ -180,7 +180,7 @@ bool vipir_emul_handler(struct emul_access* acc)
             }
         }
 
-        bitwise_op_set_gmpse((unsigned long)*tgt_reg, bitop_mask);
+        bitwise_op_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
         *tgt_reg = (uint8_t)bitwise_op_set_val(acc, *tgt_reg, bitop_mask);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
