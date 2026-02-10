@@ -119,28 +119,26 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
             }
         }
 
-        if (virt_id == INVALID_CPUID) {
-            return true;
-        }
+        if (virt_id != INVALID_CPUID) {
+            unsigned long psw = get_gmpsw();
+            if (vm->vcpus[virt_id].arch.started) {
+                set_gmpsw(psw & ~PSW_Z);
+            } else {
+                set_gmpsw(psw | PSW_Z);
+            }
 
-        unsigned long psw = get_gmpsw();
-        if (vm->vcpus[virt_id].arch.started) {
-            set_gmpsw(psw & ~PSW_Z);
-        } else {
-            set_gmpsw(psw | PSW_Z);
-        }
-
-        switch (acc->arch.op) {
-            case EMUL_ARCH_BWOP_SET1:
-                vm->vcpus[virt_id].arch.started = true;
-                break;
-            case EMUL_ARCH_BWOP_NOT1:
-                vm->vcpus[virt_id].arch.started = true;
-                break;
-            /* CLR1 accesses are ignored */
-            /* TST1 only modifies the PSW.Z flag */
-            default:
-                break;
+            switch (acc->arch.op) {
+                case EMUL_ARCH_BWOP_SET1:
+                    vm->vcpus[virt_id].arch.started = true;
+                    break;
+                case EMUL_ARCH_BWOP_NOT1:
+                    vm->vcpus[virt_id].arch.started = true;
+                    break;
+                    /* CLR1 accesses are ignored */
+                    /* TST1 only modifies the PSW.Z flag */
+                default:
+                    break;
+            }
         }
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
@@ -163,9 +161,11 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     }
 
     /* Notify physical CPUs, if any */
-    for (cpuid_t c = 0; c < platform.cpu_num; c++) {
-        if (notify & (1UL << c)) {
-            interrupts_cpu_sendipi(c);
+    if(notify != 0){
+        for (cpuid_t c = 0; c < platform.cpu_num; c++) {
+            if (notify & (1UL << c)) {
+                interrupts_cpu_sendipi(c);
+            }
         }
     }
 
