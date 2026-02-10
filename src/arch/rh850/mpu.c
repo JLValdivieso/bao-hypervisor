@@ -7,6 +7,7 @@
 #include <cpu.h>
 #include <arch/mpu.h>
 #include <srs.h>
+#include <arch/fences.h>
 
 static inline size_t mpu_num_entries(void)
 {
@@ -28,6 +29,8 @@ static void mpu_entry_set(mpid_t mpid, struct mp_region* mpr)
     set_mpla(mpr->base & MPLA_MASK);
     set_mpua(lim & MPUA_MASK);
     set_mpat(mpr->mem_flags.raw);
+
+    syncp();
 }
 
 static void mpu_entry_clear(mpid_t mpid)
@@ -36,6 +39,8 @@ static void mpu_entry_clear(mpid_t mpid)
     set_mpla(0);
     set_mpua(0);
     set_mpat(0);
+
+    syncp();
 }
 
 static mpid_t mpu_entry_allocate_hyp(void)
@@ -85,6 +90,7 @@ bool mpu_add_region(struct mp_region* reg, bool locked)
 static void mpu_entry_get_region(mpid_t mpid, struct mp_region* mpe)
 {
     set_mpidx(mpid & MPIDX_IDX_MASK);
+    syncp();
 
     unsigned long base = get_mpla();
     unsigned long limit = get_mpua();
