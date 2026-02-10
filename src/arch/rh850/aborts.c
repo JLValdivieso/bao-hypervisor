@@ -16,6 +16,18 @@
 #define HVTRAP_LOW (0xf000)
 #define HVTRAP_HIGH (0xf01f)
 
+#define PSW_NP_SHIFT        (7UL)
+#define PSW_NP_MASK         (0x1UL << PSW_NP_SHIFT)
+#define PSW_GET_NP(v)       (((v) & PSW_NP_MASK) >> PSW_NP_SHIFT)
+
+#define EIIC_CAUSE_SHIFT (0UL)
+#define EIIC_CAUSE_MASK  (0xFFFFUL)
+#define EIIC_GET_CAUSE(v) (((v) & EIIC_CAUSE_MASK) >> EIIC_CAUSE_SHIFT)
+
+#define FEIC_CAUSE_SHIFT (0UL)
+#define FEIC_CAUSE_MASK  (0xFFFFUL)
+#define FEIC_GET_CAUSE(v) (((v) & FEIC_CAUSE_MASK) >> FEIC_CAUSE_SHIFT)
+
 #define F8_OPCODE        (0x3EUL)
 #define F9_OPCODE        (0x3FUL)
 #define F9_SUBOPCODE     (0x1CUL)
@@ -143,11 +155,22 @@ static void hvtrap(void)
     vcpu_writereg(cpu()->vcpu, 6, res);
 }
 
-void abort(void)
+static inline unsigned long get_exception_cause(void)
 {
     unsigned long psw = srs_psw_read();
-    unsigned long cause = (psw & (0x1UL << 7)) ? (srs_feic_read() & 0xFFFFUL) : (srs_eiic_read() & 0xFFFFUL);
+    unsigned long cause = 0;
 
+    if(PSW_GET_NP(psw)) {
+        cause = FEIC_GET_CAUSE(srs_feic_read());
+    } else {
+        cause = EIIC_GET_CAUSE(srs_eiic_read());
+    }
+    return cause;
+}
+
+void abort(void)
+{
+    unsigned long cause = get_exception_cause();
     switch (cause) {
         case MDP_GUEST:
             data_abort();
