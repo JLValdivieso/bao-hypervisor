@@ -56,6 +56,13 @@
 #define FEPSWH_GPID_MASK (EIPSWH_GPID_MASK)
 #define FEPSWH_GM        (EIPSWH_GM)
 
+#define TSCTRL_CEN_SHIFT      (0UL)
+#define TSCTRL_CEN_MASK       (0x1UL << TSCTRL_CEN_SHIFT)
+#define TSCTRL_GET_CEN(v)     (((v) & TSCTRL_CEN_MASK) >> TSCTRL_CEN_SHIFT)
+
+#define TSCTRL_CEN_SET(v)     ((v) | TSCTRL_CEN_MASK)
+#define TSCTRL_CEN_CLR(v)     ((v) & ~TSCTRL_CEN_MASK)
+
 /* Guest context registers */
 #define GMMPM_GMPE       (1UL << 2)
 
@@ -103,6 +110,11 @@ SRS_GEN_ACCESSORS(intbp, 4, 1)
 SRS_GEN_ACCESSORS(mea, 6, 2)
 SRS_GEN_ACCESSORS(mei, 8, 2)
 SRS_GEN_ACCESSORS(rbip, 18, 2)
+
+/* TIME STAMP */
+SRS_GEN_ACCESSORS(tscountl, 0, 11)
+SRS_GEN_ACCESSORS(tscounth, 1, 11)
+SRS_GEN_ACCESSORS(tsctrl, 2, 11)
 
 /* INTERRUPT SYS REGS */
 SRS_GEN_ACCESSORS(ispr, 10, 2)

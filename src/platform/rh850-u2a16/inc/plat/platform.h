@@ -16,4 +16,9 @@
 /* Interrupts */
 #define PLAT_MAX_INTERRUPTS 768
 
+#ifndef PLAT_CLK_CPU
+#define PLAT_CLK_CPU (400000000UL) // 400 MHz. This value depends on CKDIVMD OPTION BYTE.
+#endif
+
+
 #endif /* __PLAT_PLATFORM_H__ */

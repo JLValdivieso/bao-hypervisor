@@ -12,6 +12,34 @@ cpuid_t CPU_MASTER __attribute__((section(".datanocopy")));
 
 #define SNZCFG_PERIOD (uint8_t)(~0)
 
+static inline uint64_t read_tscount64(void)
+{
+    uint32_t hi1, lo, hi2;
+
+    do {
+        hi1 = srs_tscounth_read();
+        lo  = srs_tscountl_read();
+        hi2 = srs_tscounth_read();
+    } while (hi1 != hi2);
+
+    return ((uint64_t)hi2 << 32) | lo;
+}
+
+static void wait_us(unsigned long us)
+{
+    /* enable counter */
+    srs_tsctrl_write(TSCTRL_CEN_SET(srs_tsctrl_read()));
+    uint64_t before = 0;
+    uint64_t target = us * (uint64_t)((1000.0 * 1000.0)/PLAT_CLK_CPU);
+
+    before = read_tscount64();
+    while((read_tscount64() - before) < target) { }
+
+    /* disable counter */
+    srs_tsctrl_write(TSCTRL_CEN_CLR(srs_tsctrl_read()));
+}
+
+
 /* Perform architecture dependent cpu cores initializations */
 void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
 {
@@ -25,6 +53,8 @@ void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
             }
 
             (*bootcrl) |= (1UL << c);
+            /* wait 100us as per the manual */
+            wait_us(100);
         }
     }
 
