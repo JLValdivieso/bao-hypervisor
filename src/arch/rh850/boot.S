@@ -249,8 +249,10 @@ _copy_data:
  */
 _clear_mpu:
     mov r0, r15
+    stsr 2, r16, 5      /* r16 = MPCFG (SR2, sel 5) */
+    andi 0x1F, r16, r16 /* r16 = NMPUE (bits 4..0) */
+    addi 1, r16, r16    /* r16 = NMPUE + 1 = entry count */
 _clear_mpu_1:
-    mov 32, r16     /* TODO: discover number of MPU entries */
     cmp r15, r16
     be _clear_mpu_exit
 
