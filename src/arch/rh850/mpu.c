@@ -199,7 +199,7 @@ void mpu_arch_init(void)
 
     /* At this point we configure MPIDs as PEID to perform platform initialization */
     unsigned long peid = srs_peid_read();
-    srs_mpid6_write(peid);
+    srs_mpid7_write(peid);
     srs_spid_write(peid);
 }
 

@@ -83,13 +83,13 @@ static unsigned long read_instruction(unsigned long pc)
     }
 
     /* Enable Hyp access to VM space */
-    srs_mpid7_write(HYP_SPID);
+    srs_mpid6_write(HYP_SPID);
     fence_sync_write();
 
     inst = (unsigned long)(*pc_ptr | (*(pc_ptr + 1) << 16));
 
     /* Disable Hyp access to VM space */
-    srs_mpid7_write(HYP_AUX_SPID);
+    srs_mpid6_write(cpu()->vcpu->vm->id);
     fence_sync();
 
     return inst;

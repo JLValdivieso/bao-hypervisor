@@ -49,55 +49,167 @@ struct addr_space_arch {
 
 typedef mpat_flags_t mem_flags_t;
 
-#define PTE_INVALID        ((mem_flags_t){ .e = 0 })
+#define PTE_INVALID ((mem_flags_t){ .e = 0 })
+
 /**
- * Any SPID can read from this region
- * No SPID can write to this region
+ * Only SPID in MPID7 can read and execute this region
  */
-#define PTE_HYP_FLAGS_CODE ((mem_flags_t){ .e = 1, .sr = 1, .sw = 1, .sx = 1, .rg = 1 })
+#define PTE_HYP_FLAGS_CODE \
+    ((mem_flags_t){        \
+        .ur = 1,           \
+        .uw = 0,           \
+        .ux = 1,           \
+        .sr = 1,           \
+        .sw = 0,           \
+        .sx = 1,           \
+        .e = 1,            \
+        .rg = 0,           \
+        .wg = 0,           \
+        .rmpid0 = 0,       \
+        .rmpid1 = 0,       \
+        .rmpid2 = 0,       \
+        .rmpid3 = 0,       \
+        .rmpid4 = 0,       \
+        .rmpid5 = 0,       \
+        .rmpid6 = 0,       \
+        .rmpid7 = 1,       \
+        .wmpid0 = 0,       \
+        .wmpid1 = 0,       \
+        .wmpid2 = 0,       \
+        .wmpid3 = 0,       \
+        .wmpid4 = 0,       \
+        .wmpid5 = 0,       \
+        .wmpid6 = 0,       \
+        .wmpid7 = 1,       \
+    })
+
 /**
- * Only SPID in MPID6 can read from this region
- * Only SPID in MPID6 can write to this region
+ * Only SPID in MPID7 can read and write this region
  */
-#define PTE_HYP_FLAGS      ((mem_flags_t){ .e = 1, .sr = 1, .sw = 1, .sx = 1, .rmpid6 = 1, .wmpid6 = 1 })
+#define PTE_HYP_FLAGS \
+    ((mem_flags_t){   \
+        .ur = 1,      \
+        .uw = 1,      \
+        .ux = 0,      \
+        .sr = 1,      \
+        .sw = 1,      \
+        .sx = 0,      \
+        .e = 1,       \
+        .rg = 0,      \
+        .wg = 0,      \
+        .rmpid0 = 0,  \
+        .rmpid1 = 0,  \
+        .rmpid2 = 0,  \
+        .rmpid3 = 0,  \
+        .rmpid4 = 0,  \
+        .rmpid5 = 0,  \
+        .rmpid6 = 0,  \
+        .rmpid7 = 1,  \
+        .wmpid0 = 0,  \
+        .wmpid1 = 0,  \
+        .wmpid2 = 0,  \
+        .wmpid3 = 0,  \
+        .wmpid4 = 0,  \
+        .wmpid5 = 0,  \
+        .wmpid6 = 0,  \
+        .wmpid7 = 1,  \
+    })
+
 /**
- * Only the SPID in MPID6 can read from this region
- * Only the SPID in MPID6 can write to this region
+ * Only the SPID in MPID7 can read write this region
  */
 #define PTE_HYP_DEV_FLAGS \
-    ((mem_flags_t){ .e = 1, .sr = 1, .sw = 1, .sx = 0, .rmpid6 = 1, .wmpid6 = 1 })
+    ((mem_flags_t){       \
+        .ur = 1,          \
+        .uw = 1,          \
+        .ux = 0,          \
+        .sr = 1,          \
+        .sw = 1,          \
+        .sx = 0,          \
+        .e = 1,           \
+        .rg = 0,          \
+        .wg = 0,          \
+        .rmpid0 = 0,      \
+        .rmpid1 = 0,      \
+        .rmpid2 = 0,      \
+        .rmpid3 = 0,      \
+        .rmpid4 = 0,      \
+        .rmpid5 = 0,      \
+        .rmpid6 = 0,      \
+        .rmpid7 = 1,      \
+        .wmpid0 = 0,      \
+        .wmpid1 = 0,      \
+        .wmpid2 = 0,      \
+        .wmpid3 = 0,      \
+        .wmpid4 = 0,      \
+        .wmpid5 = 0,      \
+        .wmpid6 = 0,      \
+        .wmpid7 = 1,      \
+    })
 
 /**
- * Only SPIDs in MPID5 and MPID7 can read from this region
- * Only SPIDs in MPID5 and MPID7 can write to this region
+ * Only SPIDs in MPID6 can read, write or execute this region
  */
-#define PTE_VM_FLAGS        \
-    ((mem_flags_t){ .e = 1, \
-        .sr = 1,            \
-        .sw = 1,            \
-        .sx = 1,            \
-        .ur = 1,            \
-        .uw = 1,            \
-        .ux = 1,            \
-        .rmpid5 = 1,        \
-        .wmpid5 = 1,        \
-        .rmpid7 = 1,        \
-        .wmpid7 = 1 })
+#define PTE_VM_FLAGS \
+    ((mem_flags_t){  \
+        .ur = 1,     \
+        .uw = 1,     \
+        .ux = 1,     \
+        .sr = 1,     \
+        .sw = 1,     \
+        .sx = 1,     \
+        .e = 1,      \
+        .rg = 0,     \
+        .wg = 0,     \
+        .rmpid0 = 0, \
+        .rmpid1 = 0, \
+        .rmpid2 = 0, \
+        .rmpid3 = 0, \
+        .rmpid4 = 0, \
+        .rmpid5 = 0, \
+        .rmpid6 = 1, \
+        .rmpid7 = 0, \
+        .wmpid0 = 0, \
+        .wmpid1 = 0, \
+        .wmpid2 = 0, \
+        .wmpid3 = 0, \
+        .wmpid4 = 0, \
+        .wmpid5 = 0, \
+        .wmpid6 = 1, \
+        .wmpid7 = 0, \
+    })
 
 /**
- * Only the SPID in MPID5 can read from this region
- * Only the SPID in MPID5 can write to this region
+ * Only SPIDs in MPID6 can read and write this region
  */
-#define PTE_VM_DEV_FLAGS    \
-    ((mem_flags_t){ .e = 1, \
-        .sr = 1,            \
-        .sw = 1,            \
-        .sx = 0,            \
-        .ur = 1,            \
-        .uw = 1,            \
-        .ux = 0,            \
-        .rmpid5 = 1,        \
-        .wmpid5 = 1 })
+#define PTE_VM_DEV_FLAGS \
+    ((mem_flags_t){      \
+        .ur = 1,         \
+        .uw = 1,         \
+        .ux = 0,         \
+        .sr = 1,         \
+        .sw = 1,         \
+        .sx = 0,         \
+        .e = 1,          \
+        .rg = 0,         \
+        .wg = 0,         \
+        .rmpid0 = 0,     \
+        .rmpid1 = 0,     \
+        .rmpid2 = 0,     \
+        .rmpid3 = 0,     \
+        .rmpid4 = 0,     \
+        .rmpid5 = 0,     \
+        .rmpid6 = 1,     \
+        .rmpid7 = 0,     \
+        .wmpid0 = 0,     \
+        .wmpid1 = 0,     \
+        .wmpid2 = 0,     \
+        .wmpid3 = 0,     \
+        .wmpid4 = 0,     \
+        .wmpid5 = 0,     \
+        .wmpid6 = 1,     \
+        .wmpid7 = 0,     \
+    })
 
 static inline size_t mpu_granularity(void)
 {
