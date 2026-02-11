@@ -154,8 +154,13 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
         unsigned long phys_peid = val & 0x7UL;
         unsigned long virt_peid = INVALID_CPUID;
         for (size_t i = 0; i < vm->cpu_num; i++) {
-            if (vm->vcpus[i].phys_id == phys_peid) {
-                virt_peid = vm->vcpus[i].id;
+            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
+            if(vcpu_trgt == NULL){
+                continue;
+            }
+            if (vcpu_trgt->phys_id == phys_peid) {
+                virt_peid = vcpu_trgt->id;
+                break;
             }
         }
         if (virt_peid != INVALID_CPUID) {

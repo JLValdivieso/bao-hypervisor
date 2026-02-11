@@ -173,8 +173,12 @@ bool vipir_emul_handler(struct emul_access* acc)
     if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
         uint8_t bitop_mask = 0;
         for (size_t i = 0; i < vm->cpu_num; i++) {
+            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
+            if(vcpu_trgt == NULL){
+                continue;
+            }
             if ((1U << i) & acc->arch.byte_mask) {
-                size_t phys_id = vm->vcpus[i].phys_id;
+                size_t phys_id = vcpu_trgt->phys_id;
                 bitop_mask = (uint8_t)(1U << phys_id);
                 break;
             }
@@ -186,8 +190,12 @@ bool vipir_emul_handler(struct emul_access* acc)
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long write_val = 0;
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            size_t virt_id = vm->vcpus[i].id;
-            size_t phys_id = vm->vcpus[i].phys_id;
+            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
+            if(vcpu_trgt == NULL){
+                continue;
+            }
+            size_t virt_id = vcpu_trgt->id;
+            size_t phys_id = vcpu_trgt->phys_id;
             if (phys_id >= virt_id) {
                 write_val |= ((val & (1UL << virt_id)) << (phys_id - virt_id));
             } else {
@@ -199,8 +207,12 @@ bool vipir_emul_handler(struct emul_access* acc)
         unsigned long val = *tgt_reg;
         unsigned long read_val = 0;
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            size_t virt_id = vm->vcpus[i].id;
-            size_t phys_id = vm->vcpus[i].phys_id;
+            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
+            if(vcpu_trgt == NULL){
+                continue;
+            }
+            size_t virt_id = vcpu_trgt->id;
+            size_t phys_id = vcpu_trgt->phys_id;
             if (phys_id >= virt_id) {
                 read_val |= (val & (1UL << phys_id)) >> (phys_id - virt_id);
             } else {
