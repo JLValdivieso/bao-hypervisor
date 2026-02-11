@@ -71,7 +71,8 @@ static inline void update_hbe(void)
     /* Hyp entries are allocated top to bottom. By finding the first
      * entry from 0 to end, we get the last entry used by the hyp. This is
      * then used as the watermark */
-    mpid_t mpid = (mpid_t)bitmap_find_nth(cpu()->arch.mpu_hyp.bitmap, mpu_num_entries(), 1, 0, BITMAP_SET);
+    mpid_t mpid =
+        (mpid_t)bitmap_find_nth(cpu()->arch.mpu_hyp.bitmap, mpu_num_entries(), 1, 0, BITMAP_SET);
     mpu_set_hbe(mpid);
 }
 

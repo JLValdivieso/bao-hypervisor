@@ -10,7 +10,6 @@
 
 #define MPU_ARCH_MAX_NUM_ENTRIES (32)
 
-
 typedef union {
     struct {
         uint16_t ur : 1;

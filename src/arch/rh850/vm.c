@@ -85,7 +85,7 @@ void vcpu_writereg(struct vcpu* vcpu, unsigned long reg, unsigned long val)
     }
 
     /* r0 is always 0x0 */
-    if (reg != 0){
+    if (reg != 0) {
         vcpu->regs.gp_regs.r[reg] = val;
     }
 }
@@ -106,7 +106,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     unsigned long notify = 0;
     struct vcpu* waking_vcpu = NULL;
 
-    if(acc->addr & 0x3){
+    if (acc->addr & 0x3) {
         /* Aligment is not 32bit, do not emulate */
         WARNING("Unaligned access to BOOTCTRL");
         return true;
@@ -119,7 +119,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & acc->arch.byte_mask) {
                 waking_vcpu = vm_get_vcpu(vcpu->vm, i);
-                if(waking_vcpu == NULL){
+                if (waking_vcpu == NULL) {
                     continue;
                 }
                 unsigned long psw = srs_gmpsw_read();
@@ -150,7 +150,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & val) {
                 waking_vcpu = vm_get_vcpu(vcpu->vm, i);
-                if(waking_vcpu == NULL){
+                if (waking_vcpu == NULL) {
                     continue;
                 }
                 if (!waking_vcpu->arch.started) {
@@ -163,7 +163,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
         unsigned long val = 0;
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             struct vcpu* awake_vcpu = vm_get_vcpu(vcpu->vm, i);
-            if(awake_vcpu == NULL){
+            if (awake_vcpu == NULL) {
                 continue;
             }
             if (awake_vcpu->arch.started) {

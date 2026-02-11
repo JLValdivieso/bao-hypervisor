@@ -18,7 +18,7 @@ static inline uint64_t read_tscount64(void)
 
     do {
         hi1 = srs_tscounth_read();
-        lo  = srs_tscountl_read();
+        lo = srs_tscountl_read();
         hi2 = srs_tscounth_read();
     } while (hi1 != hi2);
 
@@ -30,15 +30,14 @@ static void wait_us(unsigned long us)
     /* enable counter */
     srs_tsctrl_write(TSCTRL_CEN_SET(srs_tsctrl_read()));
     uint64_t before = 0;
-    uint64_t target = us * (uint64_t)((1000.0 * 1000.0)/PLAT_CLK_CPU);
+    uint64_t target = us * (uint64_t)((1000.0 * 1000.0) / PLAT_CLK_CPU);
 
     before = read_tscount64();
-    while((read_tscount64() - before) < target) { }
+    while ((read_tscount64() - before) < target) { }
 
     /* disable counter */
     srs_tsctrl_write(TSCTRL_CEN_CLR(srs_tsctrl_read()));
 }
-
 
 /* Perform architecture dependent cpu cores initializations */
 void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
@@ -69,8 +68,7 @@ void cpu_arch_init(cpuid_t cpuid, paddr_t load_addr)
 static void reset_stack_and_jump(void* stack_base, void (*jmp_target)(void))
 {
     __asm__ volatile("mov   %[stack], sp\n\t"
-                     "jarl  %[target], lp\n\t"
-                     : : [stack] "r"(stack_base), [target] "r"(jmp_target)
+                     "jarl  %[target], lp\n\t" : : [stack] "r"(stack_base), [target] "r"(jmp_target)
                      : "lp", "memory");
 }
 

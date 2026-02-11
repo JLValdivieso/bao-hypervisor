@@ -20,5 +20,4 @@
 #define PLAT_CLK_CPU (400000000UL) // 400 MHz. This value depends on CKDIVMD OPTION BYTE.
 #endif
 
-
-#endif /* __PLAT_PLATFORM_H__ */
+#endif                             /* __PLAT_PLATFORM_H__ */

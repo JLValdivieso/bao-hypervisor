@@ -11,67 +11,67 @@
 #include <arch/emul.h>
 #include <srs.h>
 
-#define MDP_HOST (0x91)
-#define MDP_GUEST (0x99)
-#define HVTRAP_LOW (0xf000)
-#define HVTRAP_HIGH (0xf01f)
+#define MDP_HOST          (0x91)
+#define MDP_GUEST         (0x99)
+#define HVTRAP_LOW        (0xf000)
+#define HVTRAP_HIGH       (0xf01f)
 
-#define PSW_NP_SHIFT        (7UL)
-#define PSW_NP_MASK         (0x1UL << PSW_NP_SHIFT)
-#define PSW_GET_NP(v)       (((v) & PSW_NP_MASK) >> PSW_NP_SHIFT)
+#define PSW_NP_SHIFT      (7UL)
+#define PSW_NP_MASK       (0x1UL << PSW_NP_SHIFT)
+#define PSW_GET_NP(v)     (((v) & PSW_NP_MASK) >> PSW_NP_SHIFT)
 
-#define EIIC_CAUSE_SHIFT (0UL)
-#define EIIC_CAUSE_MASK  (0xFFFFUL)
+#define EIIC_CAUSE_SHIFT  (0UL)
+#define EIIC_CAUSE_MASK   (0xFFFFUL)
 #define EIIC_GET_CAUSE(v) (((v) & EIIC_CAUSE_MASK) >> EIIC_CAUSE_SHIFT)
 
-#define FEIC_CAUSE_SHIFT (0UL)
-#define FEIC_CAUSE_MASK  (0xFFFFUL)
+#define FEIC_CAUSE_SHIFT  (0UL)
+#define FEIC_CAUSE_MASK   (0xFFFFUL)
 #define FEIC_GET_CAUSE(v) (((v) & FEIC_CAUSE_MASK) >> FEIC_CAUSE_SHIFT)
 
-#define F8_OPCODE        (0x3EUL)
-#define F9_OPCODE        (0x3FUL)
-#define F9_SUBOPCODE     (0x1CUL)
+#define F8_OPCODE         (0x3EUL)
+#define F9_OPCODE         (0x3FUL)
+#define F9_SUBOPCODE      (0x1CUL)
 
-#define OPCODE_SHIFT     (5)
-#define OPCODE_MASK      (0x3FUL << OPCODE_SHIFT)
+#define OPCODE_SHIFT      (5)
+#define OPCODE_MASK       (0x3FUL << OPCODE_SHIFT)
 
-#define SUBOPCODE_SHIFT  (19)
-#define SUBOPCODE_MASK   (0x1FFFUL << SUBOPCODE_SHIFT)
+#define SUBOPCODE_SHIFT   (19)
+#define SUBOPCODE_MASK    (0x1FFFUL << SUBOPCODE_SHIFT)
 
-#define SUB8_SHIFT       (14)
-#define SUB8_MASK        (0x3UL << SUB8_SHIFT)
+#define SUB8_SHIFT        (14)
+#define SUB8_MASK         (0x3UL << SUB8_SHIFT)
 
-#define SUB9_SHIFT       (17)
-#define SUB9_MASK        (0x3UL << SUB9_SHIFT)
+#define SUB9_SHIFT        (17)
+#define SUB9_MASK         (0x3UL << SUB9_SHIFT)
 
-#define BITIDX_SHIFT     (11)
-#define BITIDX_MASK      (0x7UL << BITIDX_SHIFT)
+#define BITIDX_SHIFT      (11)
+#define BITIDX_MASK       (0x7UL << BITIDX_SHIFT)
 
-#define REGIDX_SHIFT     (11)
-#define REGIDX_MASK      (0x1FUL << REGIDX_SHIFT)
+#define REGIDX_SHIFT      (11)
+#define REGIDX_MASK       (0x1FUL << REGIDX_SHIFT)
 
 // LEN (Bits 31-28)
-#define MEI_LEN_MASK     (0xFUL << 28)
-#define MEI_LEN_SHIFT    28
-#define MEI_GET_LEN(val) (((val) & MEI_LEN_MASK) >> MEI_LEN_SHIFT)
+#define MEI_LEN_MASK      (0xFUL << 28)
+#define MEI_LEN_SHIFT     28
+#define MEI_GET_LEN(val)  (((val) & MEI_LEN_MASK) >> MEI_LEN_SHIFT)
 
 // REG (Bits 20-16)
-#define MEI_REG_MASK     (0x1F << 16)
-#define MEI_REG_SHIFT    16
-#define MEI_GET_REG(val) (((val) & MEI_REG_MASK) >> MEI_REG_SHIFT)
+#define MEI_REG_MASK      (0x1F << 16)
+#define MEI_REG_SHIFT     16
+#define MEI_GET_REG(val)  (((val) & MEI_REG_MASK) >> MEI_REG_SHIFT)
 
 // DS (Bits 11-9)
-#define MEI_DS_MASK      (0x7 << 9)
-#define MEI_DS_SHIFT     9
-#define MEI_GET_DS(val)  (((val) & MEI_DS_MASK) >> MEI_DS_SHIFT)
+#define MEI_DS_MASK       (0x7 << 9)
+#define MEI_DS_SHIFT      9
+#define MEI_GET_DS(val)   (((val) & MEI_DS_MASK) >> MEI_DS_SHIFT)
 
 // U (Bit 8)
-#define MEI_U_MASK       (1 << 8)
-#define MEI_GET_U(val)   (((val) & MEI_U_MASK) >> 8)
+#define MEI_U_MASK        (1 << 8)
+#define MEI_GET_U(val)    (((val) & MEI_U_MASK) >> 8)
 
 // RW (Bit 0)
-#define MEI_RW_MASK      (1 << 0)
-#define MEI_GET_RW(val)  ((val) & MEI_RW_MASK)
+#define MEI_RW_MASK       (1 << 0)
+#define MEI_GET_RW(val)   ((val) & MEI_RW_MASK)
 
 static unsigned long read_instruction(unsigned long pc)
 {
@@ -95,7 +95,7 @@ static unsigned long read_instruction(unsigned long pc)
     return inst;
 }
 
-static void decode_access_function(struct emul_access *acc, unsigned long addr)
+static void decode_access_function(struct emul_access* acc, unsigned long addr)
 {
     unsigned long mei = srs_mei_read();
 
@@ -167,7 +167,7 @@ static inline unsigned long get_exception_cause(void)
     unsigned long psw = srs_psw_read();
     unsigned long cause = 0;
 
-    if(PSW_GET_NP(psw)) {
+    if (PSW_GET_NP(psw)) {
         cause = FEIC_GET_CAUSE(srs_feic_read());
     } else {
         cause = EIIC_GET_CAUSE(srs_eiic_read());
