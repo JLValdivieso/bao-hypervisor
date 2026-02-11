@@ -16,7 +16,6 @@ extern cpuid_t CPU_MASTER;
 struct cpu_arch {
     struct {
         BITMAP_ALLOC(bitmap, MPU_ARCH_MAX_NUM_ENTRIES);
-        BITMAP_ALLOC(locked, MPU_ARCH_MAX_NUM_ENTRIES);
     } mpu_hyp;
 };
 

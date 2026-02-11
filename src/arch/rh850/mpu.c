@@ -18,11 +18,6 @@ static inline size_t mpu_num_entries(void)
     return num;
 }
 
-static inline void mpu_lock_entry(mpid_t mpid)
-{
-    bitmap_set(cpu()->arch.mpu_hyp.locked, mpid);
-}
-
 static void mpu_entry_set(mpid_t mpid, struct mp_region* mpr)
 {
     unsigned long lim = mpr->base + mpr->size - 4;
@@ -73,6 +68,7 @@ static inline void mpu_set_hbe(unsigned long hbe)
 bool mpu_add_region(struct mp_region* reg, bool locked)
 {
     bool failed = true;
+    UNUSED_ARG(locked);
 
     if (reg->size > 0) {
         mpid_t mpid = 0;
@@ -81,9 +77,6 @@ bool mpu_add_region(struct mp_region* reg, bool locked)
         if (mpid != INVALID_MPID) {
             failed = false;
             mpu_entry_set(mpid, reg);
-            if (locked) {
-                mpu_lock_entry(mpid);
-            }
         }
         mpu_set_hbe(mpid);
     }
@@ -185,7 +178,6 @@ void mpu_arch_init(void)
         /* No entry should be valid at this point */
         if (mpu_entry_valid(mpid)) {
             bitmap_set(cpu()->arch.mpu_hyp.bitmap, mpid);
-            bitmap_set(cpu()->arch.mpu_hyp.locked, mpid);
         }
     }
 
