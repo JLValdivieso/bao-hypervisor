@@ -95,6 +95,18 @@ static unsigned long read_instruction(unsigned long pc)
     return inst;
 }
 
+static unsigned long ds_to_width(unsigned long ds)
+{
+    /**
+     * 0: Byte (8 bits)
+     * 1: Halfword (16 bits)
+     * 2: Word (32 bits)
+     * 3: Double-word (64 bits)
+     * 4: Quad-word (128 bits)
+     */
+    return (1UL << ds) * 8;
+}
+
 static void decode_access(struct emul_access* acc, unsigned long addr)
 {
     unsigned long mei = srs_mei_read();
@@ -103,7 +115,6 @@ static void decode_access(struct emul_access* acc, unsigned long addr)
     unsigned int ds = MEI_GET_DS(mei);
     unsigned int u = MEI_GET_U(mei);
     unsigned int rw = MEI_GET_RW(mei);
-    unsigned int len = 0;
 
     /* Decode possible bitwise instruction */
     unsigned long inst = read_instruction(vcpu_readpc(cpu()->vcpu));
@@ -123,10 +134,9 @@ static void decode_access(struct emul_access* acc, unsigned long addr)
     }
 
     acc->addr = addr;
-    acc->width = len;
+    acc->width = ds_to_width(ds);
     acc->write = rw ? true : false;
     acc->reg = reg;
-    acc->reg_width = ds;
     acc->sign_ext = ~u;
 
     acc->arch.op = (enum emul_arch_bwop)bit_op;
