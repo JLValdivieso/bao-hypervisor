@@ -95,7 +95,7 @@ static unsigned long read_instruction(unsigned long pc)
     return inst;
 }
 
-static void decode_access_function(struct emul_access* acc, unsigned long addr)
+static void decode_access(struct emul_access* acc, unsigned long addr)
 {
     unsigned long mei = srs_mei_read();
 
@@ -142,7 +142,7 @@ static void data_abort(void)
     emul_handler_t handler = vm_emul_get_mem(cpu()->vcpu->vm, addr);
     if (handler != NULL) {
         struct emul_access emul;
-        decode_access_function(&emul, addr);
+        decode_access(&emul, addr);
 
         if (handler(&emul)) {
             unsigned long pc_step = MEI_GET_LEN(mei);
