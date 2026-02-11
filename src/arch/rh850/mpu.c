@@ -10,8 +10,6 @@
 #include <arch/fences.h>
 #include <bitmap.h>
 
-/* MPCFG.NMPUE (bits 4..0): number of MPU entries - 1 */
-
 static inline size_t mpu_num_entries(void)
 {
     unsigned long nmpue = MPCFG_GET_NMPUE(srs_mpcfg_read());
