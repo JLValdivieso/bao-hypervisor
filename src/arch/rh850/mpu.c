@@ -8,6 +8,7 @@
 #include <arch/mpu.h>
 #include <srs.h>
 #include <arch/fences.h>
+#include <bitmap.h>
 
 /* MPCFG.NMPUE (bits 4..0): number of MPU entries - 1 */
 
@@ -65,6 +66,15 @@ static inline void mpu_set_hbe(unsigned long hbe)
     srs_mpcfg_write(mpcfg);
 }
 
+static inline void update_hbe(void)
+{
+    /* Hyp entries are allocated top to bottom. By finding the first
+     * entry from 0 to end, we get the last entry used by the hyp. This is
+     * then used as the watermark */
+    mpid_t mpid = (mpid_t)bitmap_find_nth(cpu()->arch.mpu_hyp.bitmap, mpu_num_entries(), 1, 0, BITMAP_SET);
+    mpu_set_hbe(mpid);
+}
+
 bool mpu_add_region(struct mp_region* reg, bool locked)
 {
     bool failed = true;
@@ -78,7 +88,7 @@ bool mpu_add_region(struct mp_region* reg, bool locked)
             failed = false;
             mpu_entry_set(mpid, reg);
         }
-        mpu_set_hbe(mpid);
+        update_hbe();
     }
 
     return !failed;
@@ -133,6 +143,7 @@ bool mpu_remove_region(struct mp_region* reg)
         if (mpid != INVALID_MPID) {
             failed = false;
             mpu_entry_free(mpid);
+            update_hbe();
         }
     }
 
@@ -152,6 +163,7 @@ bool mpu_update_region(struct mp_region* mpr)
 
         if (mpe_cmp.base == mpr->base) {
             mpu_entry_set(mpid, mpr);
+            update_hbe();
             failed = false;
             break;
         }
