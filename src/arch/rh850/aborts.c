@@ -76,7 +76,7 @@
 static unsigned long read_instruction(unsigned long pc)
 {
     unsigned long inst = 0;
-    unsigned short* pc_ptr = (unsigned short*)(pc);
+    uint16_t* pc_ptr = (uint16_t*)(pc);
 
     if (pc & 0x1) {
         ERROR("Trying to read guest unaligned instruction");
