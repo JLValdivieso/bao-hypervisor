@@ -35,6 +35,11 @@
 #define MPCFG_NMPUE_MASK       (0x1FUL << MPCFG_NMPUE_SHIFT)
 #define MPCFG_GET_NMPUE(v)     (((v) & MPCFG_NMPUE_MASK) >> MPCFG_NMPUE_SHIFT)
 
+
+#define MPAT_E_SHIFT      (7U)
+#define MPAT_E_MASK       (0x1UL << MPAT_E_SHIFT)
+#define MPAT_GET_E(v)     (((v) & MPAT_E_MASK) >> MPAT_E_SHIFT)
+
 /* Hypervisor registers */
 #define GMCFG_HMP        (1UL << 1)
 #define GMCFG_GSYSE      (1UL << 4)

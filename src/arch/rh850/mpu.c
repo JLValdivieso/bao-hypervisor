@@ -170,8 +170,9 @@ bool mpu_update_region(struct mp_region* mpr)
 static inline bool mpu_entry_valid(mpid_t mpid)
 {
     srs_mpidx_write(mpid & MPIDX_IDX_MASK);
-    unsigned long attr = srs_mpat_read();
-    unsigned long valid_bit = (attr & (1 << 7)) >> 7;
+    syncp();
+
+    unsigned long valid_bit = MPAT_GET_E(srs_mpat_read());
 
     return !!valid_bit;
 }
