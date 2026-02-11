@@ -31,6 +31,10 @@
 #define MPUA_LEN         (30)
 #define MPUA_MASK        (BIT_MASK(MPUA_OFF, MPUA_LEN))
 
+#define MPCFG_NMPUE_SHIFT      (0U)
+#define MPCFG_NMPUE_MASK       (0x1FUL << MPCFG_NMPUE_SHIFT)
+#define MPCFG_GET_NMPUE(v)     (((v) & MPCFG_NMPUE_MASK) >> MPCFG_NMPUE_SHIFT)
+
 /* Hypervisor registers */
 #define GMCFG_HMP        (1UL << 1)
 #define GMCFG_GSYSE      (1UL << 4)

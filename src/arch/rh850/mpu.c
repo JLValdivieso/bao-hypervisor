@@ -9,10 +9,12 @@
 #include <srs.h>
 #include <arch/fences.h>
 
+/* MPCFG.NMPUE (bits 4..0): number of MPU entries - 1 */
+
 static inline size_t mpu_num_entries(void)
 {
-    unsigned long mpcfg = srs_mpcfg_read();
-    size_t num = (mpcfg & 0x1f) + 1;
+    unsigned long nmpue = MPCFG_GET_NMPUE(srs_mpcfg_read());
+    unsigned long num = nmpue + 1;
     return num;
 }
 
