@@ -263,6 +263,6 @@ _clear_mpu_1:
     ldsr r0, 22, 5  /* clear MPAT */
 
     addi 1, r15, r15
-    bne _clear_mpu_1
+    br _clear_mpu_1
 _clear_mpu_exit:
     jmp [lp]
