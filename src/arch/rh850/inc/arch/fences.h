@@ -46,18 +46,16 @@ static inline void fence_ord(void)
 static inline void fence_sync_write(void)
 {
     syncm();
-    synci();
 }
 
 static inline void fence_sync_read(void)
 {
-    synci();
+    syncp();
 }
 
 static inline void fence_sync(void)
 {
     syncm();
-    synci();
 }
 
 #endif /* __ARCH_FENCES_H__ */
