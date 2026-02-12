@@ -30,7 +30,7 @@ static void wait_us(unsigned long us)
     /* enable counter */
     srs_tsctrl_write(TSCTRL_CEN_SET(srs_tsctrl_read()));
     uint64_t before = 0;
-    uint64_t target = us * (uint64_t)(PLAT_CLK_CPU / (1000 * 1000));
+    uint64_t target = us * (PLAT_CLK_CPU / (1000UL * 1000UL));
 
     before = read_tscount64();
     while ((read_tscount64() - before) < target) { }
