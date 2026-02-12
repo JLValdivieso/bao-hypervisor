@@ -31,8 +31,7 @@ bool mpu_map(struct addr_space* as, struct mp_region* mem, bool locked)
 
 bool mpu_unmap(struct addr_space* as, struct mp_region* mem)
 {
-    UNUSED_ARG(as);
-    return mpu_remove_region(mem);
+    return mpu_remove_region(as, mem);
 }
 
 bool mpu_update(struct addr_space* as, struct mp_region* mpr)

@@ -107,7 +107,7 @@ static void mpu_entry_get_region(mpid_t mpid, struct mp_region* mpe)
     mpe->as_sec = SEC_UNKNOWN;
 }
 
-static mpid_t mpu_entry_get_region_id(struct mp_region* mpe)
+static mpid_t mpu_entry_get_region_id(struct addr_space* as, struct mp_region* mem)
 {
     mpid_t mpid = INVALID_MPID;
 
@@ -116,8 +116,16 @@ static mpid_t mpu_entry_get_region_id(struct mp_region* mpe)
             struct mp_region mpe_cmp;
             mpu_entry_get_region(i, &mpe_cmp);
 
-            if (mpe_cmp.base == mpe->base && mpe_cmp.size == mpe->size) {
-                mpid = i;
+            if (mpe_cmp.base == mem->base && mpe_cmp.size == mem->size) {
+                if(as->type != AS_HYP) { /* VM */
+                    if(mpe_cmp.mem_flags.wmpid6 || mpe_cmp.mem_flags.rmpid6){
+                        mpid = i;
+                    }
+                } else { /* HYP */
+                    if(mpe_cmp.mem_flags.wmpid7 || mpe_cmp.mem_flags.rmpid7){
+                        mpid = i;
+                    }
+                }
                 break;
             }
         }
@@ -132,12 +140,12 @@ static inline void mpu_entry_free(mpid_t mpid)
     bitmap_clear(cpu()->arch.mpu_hyp.bitmap, mpid);
 }
 
-bool mpu_remove_region(struct mp_region* reg)
+bool mpu_remove_region(struct addr_space* as, struct mp_region* mem)
 {
     bool failed = true;
 
-    if (reg->size > 0) {
-        mpid_t mpid = mpu_entry_get_region_id(reg);
+    if (mem->size > 0) {
+        mpid_t mpid = mpu_entry_get_region_id(as, mem);
 
         if (mpid != INVALID_MPID) {
             failed = false;
