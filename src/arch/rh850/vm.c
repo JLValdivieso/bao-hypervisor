@@ -8,6 +8,7 @@
 #include <vm.h>
 #include <ipir.h>
 #include <vintc.h>
+#include <platform.h>
 
 void vm_arch_init(struct vm* vm, const struct vm_config* vm_config)
 {
@@ -106,9 +107,9 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     unsigned long notify = 0;
     struct vcpu* waking_vcpu = NULL;
 
-    if (acc->addr & 0x3) {
-        /* Aligment is not 32bit, do not emulate */
-        WARNING("Unaligned access to BOOTCTRL");
+    if(acc->addr != platform.arch.bootctrl_addr && acc->width != 32){
+        /* ignore access */
+        WARNING("Invalid access to BOOTCTRL\n");
         return true;
     }
 
@@ -190,7 +191,8 @@ void vbootctrl_init(struct vm* vm)
     if (cpu()->id == vm->master) {
         vm->arch.bootctrl_emul = (struct emul_mem){
             .va_base = platform.arch.bootctrl_addr,
-            .size = 0x10,
+            /* BOOTCTRL is 4 bytes only */
+            .size = ALIGN(4, PAGE_SIZE),
             .handler = vbootctrl_emul_handler,
         };
         vm_emul_add_mem(vm, &vm->arch.bootctrl_emul);
