@@ -109,7 +109,6 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
 
     if(acc->addr != platform.arch.bootctrl_addr && acc->width != 32){
         /* ignore access */
-        WARNING("Invalid access to BOOTCTRL\n");
         return true;
     }
 
