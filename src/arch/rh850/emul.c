@@ -33,7 +33,7 @@ unsigned long emul_arch_bwop_set_val(struct emul_access* acc, unsigned long cur_
             val = cur_val | bitop_mask;
             break;
         case EMUL_ARCH_BWOP_NOT1:
-            val = cur_val & bitop_mask ? (cur_val & ~bitop_mask) : (cur_val | bitop_mask);
+            val = (~cur_val & bitop_mask) | (cur_val & ~bitop_mask);
             break;
         case EMUL_ARCH_BWOP_CLR1:
             val = cur_val & ~bitop_mask;
