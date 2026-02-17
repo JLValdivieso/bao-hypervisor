@@ -30,15 +30,13 @@ struct ipir_chann {
     uint8_t pad4[0x20 - 0x15];
 };
 
-struct ipir_pe_set {
-    struct ipir_chann chann[IPIR_NUM_CHANNELS];
-    uint8_t pad[0x100 - 0x80];
-};
-
 struct ipir_hw {
     struct ipir_chann self[IPIR_NUM_CHANNELS];
     uint8_t pad[0x800 - 0x80];
-    struct ipir_pe_set pe[PLAT_CPU_NUM];
+    struct {
+        struct ipir_chann chann[IPIR_NUM_CHANNELS];
+        uint8_t pad[0x100 - 0x80];
+    } pe[PLAT_CPU_NUM];
 };
 
 void ipir_handle(irqid_t int_id);
