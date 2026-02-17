@@ -237,7 +237,7 @@ void vipir_init(struct vm* vm)
     }
 
     /* Reserve IPIR channels not used by the hypervisor */
-    for (size_t i = 0; i < IPIR_NUM_CHANNELS; i++) {
+    for (irqid_t i = IPIR_CH0_IRQ_ID; i < (IPIR_CH0_IRQ_ID + IPIR_NUM_CHANNELS); i++) {
         if (i != IPI_HYP_IRQ_ID) {
             if (!interrupts_vm_assign(vm, i)) {
                 ERROR("Failed to reserve VM IPIR channel interrupt");

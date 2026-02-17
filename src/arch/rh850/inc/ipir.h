@@ -8,6 +8,9 @@
 #ifndef __ARCH_IPIR_H__
 #define __ARCH_IPIR_H__
 
+#define IPIR_CH0_IRQ_ID   (0)
+#define IPIR_CH1_IRQ_ID   (1)
+#define IPIR_CH2_IRQ_ID   (2)
 #define IPIR_CH3_IRQ_ID   (3)
 #define IPIR_NUM_CHANNELS (4)
 
