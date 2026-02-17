@@ -180,6 +180,7 @@ bool vipir_emul_handler(struct emul_access* acc)
             if ((1U << i) & acc->arch.byte_mask) {
                 size_t phys_id = vcpu_trgt->phys_id;
                 bitop_mask = (uint8_t)(1U << phys_id);
+                break;
             }
         }
 
