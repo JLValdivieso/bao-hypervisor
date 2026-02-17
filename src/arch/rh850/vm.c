@@ -119,29 +119,32 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & acc->arch.byte_mask) {
                 waking_vcpu = vm_get_vcpu(vcpu->vm, i);
-                if (waking_vcpu == NULL) {
-                    continue;
+                if (waking_vcpu != NULL) {
+                    break;
                 }
-                unsigned long psw = srs_gmpsw_read();
-                if (waking_vcpu->arch.started) {
-                    srs_gmpsw_write(psw & ~PSW_Z);
-                } else {
-                    srs_gmpsw_write(psw | PSW_Z);
-                }
-                if (!waking_vcpu->arch.started) {
-                    notify |= (1UL << waking_vcpu->phys_id);
-                    switch (acc->arch.op) {
-                        case EMUL_ARCH_BWOP_SET1:
-                            waking_vcpu->arch.started = true;
-                            break;
-                        case EMUL_ARCH_BWOP_NOT1:
-                            waking_vcpu->arch.started = true;
-                            break;
-                            /* CLR1 accesses are ignored */
-                            /* TST1 only modifies the PSW.Z flag */
-                        default:
-                            break;
-                    }
+            }
+        }
+
+        if(waking_vcpu != NULL){
+            unsigned long psw = srs_gmpsw_read();
+            if (waking_vcpu->arch.started) {
+                srs_gmpsw_write(psw & ~PSW_Z);
+            } else {
+                srs_gmpsw_write(psw | PSW_Z);
+            }
+            if (!waking_vcpu->arch.started) {
+                notify |= (1UL << waking_vcpu->phys_id);
+                switch (acc->arch.op) {
+                    case EMUL_ARCH_BWOP_SET1:
+                        waking_vcpu->arch.started = true;
+                        break;
+                    case EMUL_ARCH_BWOP_NOT1:
+                        waking_vcpu->arch.started = true;
+                        break;
+                        /* CLR1 accesses are ignored */
+                        /* TST1 only modifies the PSW.Z flag */
+                    default:
+                        break;
                 }
             }
         }
