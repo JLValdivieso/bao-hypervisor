@@ -250,11 +250,6 @@ static bool vintc2_emul_handler(struct emul_access* acc)
         return true;
     }
 
-    /* Ignore access */
-    if (!acc->write && acc->arch.bwop == EMUL_ARCH_BWOP_NO) {
-        vcpu_writereg(cpu()->vcpu, acc->reg, 0);
-    }
-
     return true;
 }
 
