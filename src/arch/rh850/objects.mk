@@ -16,4 +16,3 @@ cpu-objs-y+=vipir.o
 cpu-objs-y+=vbootctrl.o
 cpu-objs-y+=vm.o
 cpu-objs-y+=vmm.o
-cpu-objs-y+=emul.o
