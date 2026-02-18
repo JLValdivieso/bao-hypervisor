@@ -8,35 +8,29 @@
 #include <vm.h>
 #include <cpu.h>
 
-unsigned long emul_arch_bwop_get_acc_bitop_mask(struct emul_access* acc)
+bool emul_arch_is_bwop(struct emul_access_arch* acc)
 {
-    size_t addr_off = acc->addr & 0x1UL;
-    return acc->arch.byte_mask << (addr_off * 8);
+    return acc->bwop != EMUL_ARCH_BWOP_NO;
 }
 
-void emul_arch_bwop_set_gmpsw(unsigned long cur_val, unsigned long bitop_mask)
+uint8_t emul_arch_bwop_emul_acc(struct emul_access_arch* acc, uint8_t cur_val)
 {
     unsigned long psw = srs_gmpsw_read();
-    if (cur_val & bitop_mask) {
+    if (cur_val & acc->bit) {
         srs_gmpsw_write(psw & ~PSW_Z);
     } else {
         srs_gmpsw_write(psw | PSW_Z);
     }
-}
-
-unsigned long emul_arch_bwop_set_val(struct emul_access* acc, unsigned long cur_val,
-    unsigned long bitop_mask)
-{
-    unsigned long val = 0;
-    switch (acc->arch.op) {
+    uint8_t val = 0;
+    switch (acc->bwop) {
         case EMUL_ARCH_BWOP_SET1:
-            val = cur_val | bitop_mask;
+            val = (uint8_t)(cur_val | acc->bit);;
             break;
         case EMUL_ARCH_BWOP_NOT1:
-            val = (~cur_val & bitop_mask) | (cur_val & ~bitop_mask);
+            val = (uint8_t)(cur_val ^ acc->bit);;
             break;
         case EMUL_ARCH_BWOP_CLR1:
-            val = cur_val & ~bitop_mask;
+            val = (uint8_t)(cur_val & (uint8_t)~acc->bit);;
             break;
             /* TST1 only modifies the PSW.Z flag */
         default:

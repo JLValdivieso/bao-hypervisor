@@ -43,10 +43,9 @@ static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, uns
     }
 
     /* bit manipulation instruction */
-    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
-        uint16_t bitop_mask = (uint16_t)emul_arch_bwop_get_acc_bitop_mask(acc);
-        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint16_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
+    if (emul_arch_is_bwop(&acc->arch)) {
+        volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
+        *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         *tgt_reg =
@@ -75,10 +74,9 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
     first_imr_int += 32;
 
     /* bit manipulation instruction */
-    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc);
-        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
+    if (emul_arch_is_bwop(&acc->arch)) {
+        volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
+        *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long write_val = *tgt_reg;
@@ -135,10 +133,9 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
 
     /* we use 0xFFFF0000 to mask access to virtualization configuration */
     /* bit manipulation instruction */
-    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc) & 0xFFFF0000;
-        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
+    if (emul_arch_is_bwop(&acc->arch)) {
+        volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
+        *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long virt_peid = val & 0x7UL;
@@ -191,11 +188,9 @@ static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, ui
         ERROR("VM tried to access unassigned interrupt");
     }
 
-    /* bit manipulation instruction */
-    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
-        uint32_t bitop_mask = (uint32_t)emul_arch_bwop_get_acc_bitop_mask(acc);
-        emul_arch_bwop_set_gmpsw((unsigned long)*tgt_reg, bitop_mask);
-        *tgt_reg = (uint32_t)emul_arch_bwop_set_val(acc, *tgt_reg, bitop_mask);
+    if (emul_arch_is_bwop(&acc->arch)) {
+        volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
+        *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
     } else if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         *tgt_reg = ((val & mask) << (addr_off * 8)) | (*tgt_reg & ~(mask << (addr_off * 8)));
@@ -266,7 +261,7 @@ static bool vintc2_emul_handler(struct emul_access* acc)
     }
 
     /* Ignore access */
-    if (!acc->write && acc->arch.op == EMUL_ARCH_BWOP_NO) {
+    if (!acc->write && acc->arch.bwop == EMUL_ARCH_BWOP_NO) {
         vcpu_writereg(cpu()->vcpu, acc->reg, 0);
     }
 

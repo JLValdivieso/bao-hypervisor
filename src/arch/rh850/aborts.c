@@ -120,17 +120,29 @@ static void decode_access(struct emul_access* acc, unsigned long addr)
     unsigned long inst = read_instruction(vcpu_readpc(cpu()->vcpu));
     unsigned long opcode = ((inst & OPCODE_MASK) >> OPCODE_SHIFT);
     unsigned long subopcode = ((inst & SUBOPCODE_MASK) >> SUBOPCODE_SHIFT);
-    unsigned long bit_op = 0;
-    unsigned long mask = 0;
+    unsigned long bwop = EMUL_ARCH_BWOP_NO;
+    uint8_t bit = 0;
 
     if (opcode == F8_OPCODE) {
-        mask = 1UL << ((inst & BITIDX_MASK) >> BITIDX_SHIFT);
-        bit_op = ((inst & SUB8_MASK) >> SUB8_SHIFT) + 1;
+        bit = (inst & BITIDX_MASK) >> BITIDX_SHIFT;
+        bwop = ((inst & SUB8_MASK) >> SUB8_SHIFT) + 1;
+        int16_t imm = (int16_t)(inst >> 16);
+        if(imm < 0) {
+            if((unsigned long)(-imm) > addr){
+                ERROR("bitwise addr underflow")
+            }
+        } else {
+            if(addr > UINT32_MAX - (unsigned long)imm){
+                ERROR("bitwise addr overflow")
+            }
+        }
+
+        addr = (unsigned long)((signed long)addr + imm);
     } else if (opcode == F9_OPCODE && subopcode == F9_SUBOPCODE) {
         unsigned long reg_idx = (inst & REGIDX_MASK) >> REGIDX_SHIFT;
-        unsigned long bit_idx = vcpu_readreg(cpu()->vcpu, reg_idx);
-        mask = 1UL << (bit_idx & 0x7UL);
-        bit_op = ((inst & SUB9_MASK) >> SUB9_SHIFT) + 1;
+        /* only the three LSB of register val are used as bit index */
+        bit = vcpu_readreg(cpu()->vcpu, reg_idx) & 0x7;
+        bwop = ((inst & SUB9_MASK) >> SUB9_SHIFT) + 1;
     }
 
     acc->addr = addr;
@@ -138,9 +150,8 @@ static void decode_access(struct emul_access* acc, unsigned long addr)
     acc->write = rw ? true : false;
     acc->reg = reg;
     acc->sign_ext = ~u;
-
-    acc->arch.op = (enum emul_arch_bwop)bit_op;
-    acc->arch.byte_mask = mask;
+    acc->arch.bwop = bwop;
+    acc->arch.bit = bit;
 }
 
 static void data_abort(void)

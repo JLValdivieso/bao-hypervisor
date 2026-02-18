@@ -113,11 +113,12 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
     }
 
     /* Translate access */
-    if (acc->arch.op != EMUL_ARCH_BWOP_NO) {
+    /* TODO does this register support bitwise instructions? */
+    if (emul_arch_is_bwop(&acc->arch)) {
         /* this access is fairly unique, so it's not practical to put behind
          * arch emul */
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            if ((1U << i) & acc->arch.byte_mask) {
+            if ((1U << i) & acc->arch.bit) {
                 waking_vcpu = vm_get_vcpu(vcpu->vm, i);
                 if (waking_vcpu != NULL) {
                     break;
@@ -134,7 +135,7 @@ bool vbootctrl_emul_handler(struct emul_access* acc)
             }
             if (!waking_vcpu->arch.started) {
                 notify |= (1UL << waking_vcpu->phys_id);
-                switch (acc->arch.op) {
+                switch (acc->arch.bwop) {
                     case EMUL_ARCH_BWOP_SET1:
                         waking_vcpu->arch.started = true;
                         break;
