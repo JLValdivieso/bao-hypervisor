@@ -73,9 +73,8 @@ _reset_handler:
     /* enable interrupt virtualization support,
     recommended at CPU initialization after reset */
     mov PLAT_INTC1_ADDR, r20
-    add PLAT_INTC1_IHVCFG_OFFSET, r20
     mov 0x1, r21
-    st.w r21, 0[r20]    /* IHVCFG.IHVE = 0x1 */
+    st.w r21, PLAT_INTC1_IHVCFG_OFFSET[r20]    /* IHVCFG.IHVE = 0x1 */
 
     /* check if current CPU is CPU_MASTER */
     cmp r11, r10
