@@ -3,178 +3,90 @@
  * Copyright (c) Bao Project and Contributors. All rights reserved.
  */
 
+#include "arch/emul.h"
+#include "types.h"
 #include <vipir.h>
 #include <emul.h>
 #include <vm.h>
 #include <cpu.h>
 #include <ipir.h>
 
-#define IPIR_REGS_PAT_MASK (0x9FUL)
+#define IPIR_GET_CHANN(o)       (((o) & 0xE0) >> 5)
+#define IPIR_IS_SELF(o)         ((((o) & 0xF00) >> 11) == 0)
+#define IPIR_GET_NON_SELF_PE(o) ((((o) & 0xF00) >> 8) - 8)
 
-#define IPInENS_PAT        (0x000UL)
-#define IPInFLGS_PAT       (0x004UL)
-#define IPInFCLRS_PAT      (0x008UL)
-#define IPInREQS_PAT       (0x010UL)
-#define IPInRCLRS_PAT      (0x014UL)
-
-#define IPInENm_PAT        (0x800UL)
-#define IPInFLGm_PAT       (0x804UL)
-#define IPInFCLRm_PAT      (0x808UL)
-#define IPInREQm_PAT       (0x810UL)
-#define IPInRCLRm_PAT      (0x814UL)
+#define IPIR_REG_OFFSET_MASK           (0x1f)
 
 extern volatile struct ipir_hw* ipir;
-
-static const unsigned long ipir_reg_self_pat[] = { IPInENS_PAT, IPInFLGS_PAT, IPInFCLRS_PAT,
-    IPInREQS_PAT, IPInRCLRS_PAT };
-
-static const unsigned long ipir_reg_pem_pat[] = { IPInENm_PAT, IPInFLGm_PAT, IPInFCLRm_PAT,
-    IPInREQm_PAT, IPInRCLRm_PAT };
-
-static bool decode_ipir_chann(size_t* chann, size_t reg_idx, size_t offset, bool self)
-{
-    bool ret = false;
-
-    if (self) {
-        size_t delta = offset - ipir_reg_self_pat[reg_idx];
-        if (delta % 0x20 == 0) {
-            *chann = delta / 0x20;
-            ret = true;
-        }
-    } else {
-        size_t delta = offset - ipir_reg_pem_pat[reg_idx];
-        size_t rem = delta % 0x100;
-        if (rem % 0x20 == 0) {
-            *chann = rem / 0x20;
-            ret = true;
-        }
-    }
-    return ret;
-}
-
 
 static bool vipir_emul_handler(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
     struct vm* vm = vcpu->vm;
 
-    size_t acc_offset = acc->addr - platform.arch.ipir_addr;
-    cpuid_t pe_idx = 0;
-    size_t chann_idx = 0;
-    volatile uint8_t* tgt_reg = NULL;
-    bool self = false;
-    bool ignore = false;
-
-    size_t ipir_self_bot = offsetof(struct ipir_hw, self);
-    size_t ipir_self_top = sizeof(((struct ipir_hw*)NULL)->self) + ipir_self_bot;
-    size_t ipir_pe_bot = offsetof(struct ipir_hw, pe);
-    size_t ipir_pe_top = sizeof(((struct ipir_hw*)NULL)->pe) + ipir_pe_bot;
-
-    /* Determine whether the access was made to the self region or to a PEm region */
-    if (acc_offset >= ipir_self_bot && acc_offset < ipir_self_top) {
-        /* If the access was made to a self register, redirect
-            the access to the corresponding PEm register of the CPU */
-        pe_idx = vcpu->phys_id;
-        self = true;
-    } else if (acc_offset >= ipir_pe_bot && acc_offset < ipir_pe_top) {
-        /* If the access was made to a PEm register, check whether the CPU
-            corresponding to the target register belongs to the VM */
-        pe_idx = (acc_offset - ipir_pe_bot) >> 8;
-        if (!(vm->cpus & (1UL << pe_idx))) {
-            ignore = true;
-        }
-    } else {
-        ignore = true;
+    if(acc->width != 8){
+        /* only 8bit aligment allowed */
+        return false;
     }
 
-    /* Determine target IPIR register */
-    switch (acc->addr & IPIR_REGS_PAT_MASK) {
-        case IPInENS_PAT:
-            ignore = !decode_ipir_chann(&chann_idx, IPInEN, acc_offset, self);
-            tgt_reg = &(ipir->pe[pe_idx].chann[chann_idx].IPInEN);
+    volatile uint8_t* tgt_reg = NULL;
+    size_t acc_offset = acc->addr - (unsigned long)ipir;
+    size_t chan_idx = IPIR_GET_CHANN(acc_offset);
+    size_t pe_idx = 0;
+
+    bool self = IPIR_IS_SELF(acc_offset);
+    if (self) {
+        pe_idx = vcpu->phys_id;
+    } else {
+        cpuid_t virt_peid = IPIR_GET_NON_SELF_PE(acc_offset);
+        if(virt_peid == INVALID_CPUID){
+            ERROR("Access to unassigned PE IPIR\n");
+        }
+        pe_idx = vm_translate_to_pcpuid(vm, virt_peid);
+    }
+
+    switch (acc_offset & IPIR_REG_OFFSET_MASK) {
+        case offsetof(struct ipir_chann, IPInEN):
+            tgt_reg = &(ipir->pe[pe_idx].chann[chan_idx].IPInEN);
             break;
-        case IPInFLGS_PAT:
-            ignore = !decode_ipir_chann(&chann_idx, IPInFLG, acc_offset, self);
-            tgt_reg = &(ipir->pe[pe_idx].chann[chann_idx].IPInFLG);
+        case offsetof(struct ipir_chann, IPInFLG):
+            tgt_reg = &(ipir->pe[pe_idx].chann[chan_idx].IPInFLG);
             break;
-        case IPInFCLRS_PAT:
-            ignore = !decode_ipir_chann(&chann_idx, IPInFCLR, acc_offset, self);
-            tgt_reg = &(ipir->pe[pe_idx].chann[chann_idx].IPInFCLR);
+        case offsetof(struct ipir_chann, IPInFCLR):
+            tgt_reg = &(ipir->pe[pe_idx].chann[chan_idx].IPInFCLR);
             break;
-        case IPInREQS_PAT:
-            ignore = !decode_ipir_chann(&chann_idx, IPInREQ, acc_offset, self);
-            tgt_reg = &(ipir->pe[pe_idx].chann[chann_idx].IPInREQ);
+        case offsetof(struct ipir_chann, IPInREQ):
+            tgt_reg = &(ipir->pe[pe_idx].chann[chan_idx].IPInREQ);
             break;
-        case IPInRCLRS_PAT:
-            ignore = !decode_ipir_chann(&chann_idx, IPInRCLR, acc_offset, self);
-            tgt_reg = &(ipir->pe[pe_idx].chann[chann_idx].IPInRCLR);
+        case offsetof(struct ipir_chann, IPInRCLR):
+            tgt_reg = &(ipir->pe[pe_idx].chann[chan_idx].IPInRCLR);
             break;
         default:
-            ignore = true;
-            break;
+            tgt_reg = NULL;
     }
 
-    if (chann_idx == IPI_HYP_IRQ_ID) {
-        ignore = true;
-    }
-
-    /* Ignore access */
-    if (ignore) {
-        if (!acc->write && acc->arch.bwop == EMUL_ARCH_BWOP_NO) {
-            vcpu_writereg(vcpu, acc->reg, 0);
-        }
-        return true;
-    }
-
-    /* Translate access */
-    if (emul_arch_is_bwop(&acc->arch)) {
-        for (size_t i = 0; i < vm->cpu_num; i++) {
-            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
-            if(vcpu_trgt == NULL){
-                continue;
-            }
-            if ((1U << i) & acc->arch.bit) {
-                size_t phys_id = vcpu_trgt->phys_id;
-                acc->arch.bit = (uint8_t)(1U << phys_id);
-                break;
-            }
-        }
-
-        *tgt_reg = (uint8_t)emul_arch_bwop_emul_acc(&acc->arch, *tgt_reg);
-    } else if (acc->write) {
-        unsigned long val = vcpu_readreg(vcpu, acc->reg);
-        unsigned long write_val = 0;
-        for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
-            if(vcpu_trgt == NULL){
-                continue;
-            }
-            size_t virt_id = vcpu_trgt->id;
-            size_t phys_id = vcpu_trgt->phys_id;
-            if (phys_id >= virt_id) {
-                write_val |= ((val & (1UL << virt_id)) << (phys_id - virt_id));
+    if ((chan_idx != IPI_HYP_IRQ_ID) && (tgt_reg != NULL)) {
+        if (acc->write) {
+            unsigned long val;
+            if (emul_arch_is_bwop(&acc->arch)) {
+                val = (uint8_t)emul_arch_bwop_emul_acc(&acc->arch, *tgt_reg);
             } else {
-                write_val |= ((val & (1UL << virt_id)) >> (virt_id - phys_id));
+                val = (uint8_t)vcpu_readreg(vcpu, acc->reg);
             }
-        }
-        *tgt_reg = (uint8_t)((*tgt_reg & ~vm->cpus) | (write_val & vm->cpus));
-    } else {
-        unsigned long val = *tgt_reg;
-        unsigned long read_val = 0;
-        for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
-            if(vcpu_trgt == NULL){
-                continue;
-            }
-            size_t virt_id = vcpu_trgt->id;
-            size_t phys_id = vcpu_trgt->phys_id;
-            if (phys_id >= virt_id) {
-                read_val |= (val & (1UL << phys_id)) >> (phys_id - virt_id);
+            val = (uint8_t)vm_translate_to_pcpu_mask(vm, val, vm->cpu_num);
+            *tgt_reg = (uint8_t)((*tgt_reg & ~vm->cpus) | (val & vm->cpus));
+        } else {
+            uint8_t val = *tgt_reg;
+            if (emul_arch_is_bwop(&acc->arch)) {
+                /* translate vcpu_id bit to pcpu_id bit */
+                acc->arch.bit = (uint8_t)vm_translate_to_pcpu_mask(vm, val & acc->arch.bit, vm->cpu_num);
+                /* invoke emul to update gmpsw.z */
+                (void)emul_arch_bwop_emul_acc(&acc->arch, val);
             } else {
-                read_val |= (val & (1UL << phys_id)) << (virt_id - phys_id);
+                val = (uint8_t)vm_translate_to_pcpu_mask(vm, val, vm->cpu_num);
+                vcpu_writereg(vcpu, acc->reg, val);
             }
         }
-        vcpu_writereg(vcpu, acc->reg, read_val);
     }
     return true;
 }
