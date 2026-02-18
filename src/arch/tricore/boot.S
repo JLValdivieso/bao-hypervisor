@@ -66,7 +66,7 @@ _reset_handler:
     mtcr    $btv,%d3
 
     load_32bit_val_d %d3, _hyp_vector_table
-    mtcr    0xb010,%d3
+    mtcr    csfr_bhv,%d3
 
     load_32bit_val_d %d3, _irq_vector
     mtcr    $biv,%d3
@@ -74,7 +74,7 @@ _reset_handler:
 
     /* Force MPU disable */
     mov %d3, 0
-    mtcr 0xFE14, %d3
+    mtcr csfr_corecon, %d3
 
     jl platform_init_mem
     isync
@@ -86,7 +86,6 @@ _reset_handler:
 
     /* If master is not fixed, CPU_MASTER = coreid (d0) */
     load_32bit_val_a %a4, CPU_MASTER
-    //mov.a     %a4, %d3
     st.w     [%a4], %d0
 1:
     jl disable_watchdogs
@@ -100,7 +99,7 @@ _reset_handler:
     mov     %d3, 1 // invalidate data cache
     mtcr    csfr_dcon1, %d3
 
-    mov     %d3, 3 // TODO invalidate program cache and program buffer */
+    mov     %d3, 3 // invalidate program cache and program buffer */
     mtcr    csfr_pcon1, %d3
     isync
 
@@ -123,8 +122,8 @@ _reset_handler:
 #ifdef MEM_NON_UNIFIED
     jne     %d14, 0, 1f
         /* Copy data from RX to RWX */
-    load_32bit_val_d    %d3, _data_lma_start // LMA start
-    load_32bit_val_d    %d4, _data_vma_start // VMA start
+    load_32bit_val_a    %a12, _data_lma_start // LMA start
+    load_32bit_val_a    %a13, _data_vma_start // VMA start
     load_32bit_val_d    %d5, _image_load_end // LMA end
     jl copy_data
 #endif
@@ -261,21 +260,16 @@ boot_clear:
     ji      %a11
 
 
-/* Copies data from d3 to d4 up to the d5 limit */
+/* Copies data from a12 to a13 up to the d5 limit */
 .global copy_data
 copy_data:
-    mov.a %a12, %d3
-    mov.a %a13, %d4
 1:
     ld.w %d3, [%a12]
     st.w [%a13], %d3
     mov.d %d3, %a12
-    mov.d %d4, %a13
     jge  %d3, %d5, 2f
-    add %d3, %d3, 4
-    add %d4, %d4, 4
-    mov.a %a12 , %d3
-    mov.a %a13 , %d4
+    add.a %a12, 4
+    add.a %a13, 4
     j 1b
 2:
     ji      %a11
