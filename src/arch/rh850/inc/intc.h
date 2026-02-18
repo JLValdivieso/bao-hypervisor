@@ -25,7 +25,7 @@ struct intc1_unit {
     uint32_t FIBG;
     uint8_t pad5[0x2F0 - 0x2C4];
     uint32_t IHVCFG;
-    uint8_t pad6[0x4000 - 0x2F8];
+    uint8_t pad6[0x4000 - 0x2F4];
 };
 
 struct intc1 {
@@ -81,7 +81,7 @@ void intc_set_trgt(irqid_t int_id, cpuid_t cpu_id);
 void intc_set_enable(irqid_t int_id, bool en);
 void intc_set_prio(irqid_t int_id, unsigned long prio);
 
-void intc_vm_assign(irqid_t int_id, vmid_t vm_id);
+void intc_vm_assign(struct vm* vm, irqid_t int_id);
 void intc_hyp_assign(irqid_t int_id);
 
 void intc_set_pend(irqid_t int_id, bool en);

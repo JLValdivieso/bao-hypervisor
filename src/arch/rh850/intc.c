@@ -5,6 +5,8 @@
 
 #include <interrupts.h>
 #include <intc.h>
+#include <vm.h>
+#include <types.h>
 
 /* EIC */
 #define EIRFn_BIT          (1U << 12)
@@ -88,18 +90,26 @@ void intc_hyp_assign(irqid_t int_id)
     }
 }
 
-void intc_vm_assign(irqid_t int_id, vmid_t vm_id)
+void intc_vm_assign(struct vm* vm, irqid_t int_id)
 {
-    /* assumes calling cpu is configuring this interrupt */
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        EIBD_SET_GM(intc1_hw->self.EIBD[int_id]);
-        EIBD_SET_GPID(intc1_hw->self.EIBD[int_id], vm_id);
+        /* assign private interrupt to all VM's vcpus */
+        for(cpuid_t i = 0; i < vm->cpu_num; i++){
+            cpuid_t pcpu_id = vm_translate_to_pcpuid(vm, i);
+            if(pcpu_id != INVALID_CPUID){
+                EIBD_SET_GM(intc1_hw->pe[pcpu_id].EIBD[int_id]);
+                EIBD_SET_GPID(intc1_hw->pe[pcpu_id].EIBD[int_id], vm->id);
+            }
+        }
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_SET_GM(intc2_hw->EIBD[intc2_irq_id]);
-        EIBD_SET_GPID(intc2_hw->EIBD[intc2_irq_id], vm_id);
-
-        EIBD_SET_PEID(intc2_hw->EIBD[intc2_irq_id], cpu()->id);
+        EIBD_SET_GPID(intc2_hw->EIBD[intc2_irq_id], vm->id);
+        /* default target for interrupts is VM's vcpu 0 */
+        cpuid_t pcpu_id = vm_translate_to_pcpuid(vm, 0);
+        if(pcpu_id != INVALID_CPUID){
+            EIBD_SET_PEID(intc2_hw->EIBD[intc2_irq_id], pcpu_id);
+        }
     }
 }
 

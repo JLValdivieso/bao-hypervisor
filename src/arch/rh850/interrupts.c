@@ -50,7 +50,7 @@ inline bool interrupts_arch_conflict(bitmap_t* interrupt_bitmap, irqid_t int_id)
 
 void interrupts_arch_vm_assign(struct vm* vm, irqid_t int_id)
 {
-    intc_vm_assign(int_id, vm->id);
+    intc_vm_assign(vm, int_id);
 }
 
 void interrupts_arch_ipi_init(void)

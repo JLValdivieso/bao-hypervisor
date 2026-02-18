@@ -184,19 +184,18 @@ void vipir_init(struct vm* vm)
     if (cpu()->id == vm->master) {
         vm->arch.ipir_emul = (struct emul_mem){
             .va_base = platform.arch.ipir_addr,
-            .size = ALIGN(sizeof(struct ipir_hw), PAGE_SIZE),
-            .handler = vipir_emul_handler,
+                .size = ALIGN(sizeof(struct ipir_hw), PAGE_SIZE),
+                .handler = vipir_emul_handler,
         };
         vm_emul_add_mem(vm, &vm->arch.ipir_emul);
 
         // TODO: Add spinlock for IPIR emulation?
-    }
-
-    /* Reserve IPIR channels not used by the hypervisor */
-    for (irqid_t i = IPIR_CH0_IRQ_ID; i < (IPIR_CH0_IRQ_ID + IPIR_NUM_CHANNELS); i++) {
-        if (i != IPI_HYP_IRQ_ID) {
-            if (!interrupts_vm_assign(vm, i)) {
-                ERROR("Failed to reserve VM IPIR channel interrupt");
+        /* Reserve IPIR channels not used by the hypervisor */
+        for (irqid_t i = IPIR_CH0_IRQ_ID; i < (IPIR_CH0_IRQ_ID + IPIR_NUM_CHANNELS); i++) {
+            if (i != IPI_HYP_IRQ_ID) {
+                if (!interrupts_vm_assign(vm, i)) {
+                    ERROR("Failed to reserve VM IPIR channel interrupt");
+                }
             }
         }
     }
