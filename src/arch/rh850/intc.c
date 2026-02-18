@@ -83,7 +83,9 @@ bool intc_get_pend(irqid_t int_id)
 void intc_hyp_assign(irqid_t int_id)
 {
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        EIBD_CLR_GM(intc1_hw->self.EIBD[int_id]);
+        for(cpuid_t c = 0; c < PLAT_CPU_NUM; c++){
+            EIBD_CLR_GM(intc1_hw->pe[c].EIBD[int_id]);
+        }
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_CLR_GM(intc2_hw->EIBD[intc2_irq_id]);
