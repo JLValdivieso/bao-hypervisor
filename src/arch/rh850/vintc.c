@@ -160,11 +160,11 @@ static void emulate_intc_eibd_access(struct emul_access* acc)
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long virt_peid = val & 0x7UL;
         unsigned long phys_peid = vm_translate_to_pcpuid(vm, virt_peid);
-        if (phys_peid != INVALID_CPUID) {
-            val = (val & 0xFFFF0000) | (*tgt_reg & 0xFFF8) | (phys_peid & 0x7UL);
-        } else {
-            val = (val & 0xFFFF0000) | (*tgt_reg & ~0xFFFF0000);
+        if (phys_peid == INVALID_CPUID) {
+            /* in case the vcpu_id is invalid sanitize the write by using the first vcpu */
+            phys_peid = vm_translate_to_pcpuid(vm, 0);
         }
+        val = (val & 0xFFFF0000) | (*tgt_reg & 0xFFF8) | (phys_peid & 0x7UL);
         *tgt_reg = ((val & mask) << (addr_off * 8)) | (*tgt_reg & ~(mask << (addr_off * 8)));
     } else {
         unsigned long val = *tgt_reg;
