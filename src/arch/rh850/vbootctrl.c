@@ -17,44 +17,7 @@ static bool vbootctrl_emul_handler(struct emul_access* acc)
         return true;
     }
 
-    /* Translate access */
-    /* TODO does this register support bitwise instructions? */
-    if (emul_arch_is_bwop(&acc->arch)) {
-        /* this access is fairly unique, so it's not practical to put behind
-         * arch emul */
-        for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
-            if ((1U << i) & acc->arch.bit) {
-                waking_vcpu = vm_get_vcpu(vcpu->vm, i);
-                if (waking_vcpu != NULL) {
-                    break;
-                }
-            }
-        }
-
-        if(waking_vcpu != NULL){
-            unsigned long psw = srs_gmpsw_read();
-            if (waking_vcpu->arch.started) {
-                srs_gmpsw_write(psw & ~PSW_Z);
-            } else {
-                srs_gmpsw_write(psw | PSW_Z);
-            }
-            if (!waking_vcpu->arch.started) {
-                notify |= (1UL << waking_vcpu->phys_id);
-                switch (acc->arch.bwop) {
-                    case EMUL_ARCH_BWOP_SET1:
-                        waking_vcpu->arch.started = true;
-                        break;
-                    case EMUL_ARCH_BWOP_NOT1:
-                        waking_vcpu->arch.started = true;
-                        break;
-                        /* CLR1 accesses are ignored */
-                        /* TST1 only modifies the PSW.Z flag */
-                    default:
-                        break;
-                }
-            }
-        }
-    } else if (acc->write) {
+   if (acc->write) {
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         for (size_t i = 0; i < vcpu->vm->cpu_num; i++) {
             if ((1U << i) & val) {
