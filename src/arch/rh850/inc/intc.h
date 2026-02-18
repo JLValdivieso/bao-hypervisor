@@ -8,18 +8,18 @@
 
 #include <bao.h>
 
-#define PRIVATE_IRQS_NUM 32
+#define INTC_PRIVATE_IRQS_NUM 32
 
 struct intc1 {
-    uint16_t EIC[PRIVATE_IRQS_NUM];
+    uint16_t EIC[INTC_PRIVATE_IRQS_NUM];
     uint8_t pad0[0xF0 - 0x40];
     uint32_t IMR;
     uint8_t pad1[0x100 - 0xF4];
-    uint32_t EIBD[PRIVATE_IRQS_NUM];
+    uint32_t EIBD[INTC_PRIVATE_IRQS_NUM];
     uint8_t pad2[0x1C0 - 0x180];
     uint32_t FIBD;
     uint8_t pad3[0x200 - 0x1C4];
-    uint32_t EEIC[PRIVATE_IRQS_NUM];
+    uint32_t EEIC[INTC_PRIVATE_IRQS_NUM];
     uint32_t EIBG;
     uint8_t pad4[0x2C0 - 0x284];
     uint32_t FIBG;
@@ -27,7 +27,7 @@ struct intc1 {
     uint32_t IHVCFG;
 };
 
-#define INTC2_IRQ_NUM    (ARCH_MAX_INTERRUPTS - PRIVATE_IRQS_NUM)
+#define INTC2_IRQ_NUM    (ARCH_MAX_INTERRUPTS - INTC_PRIVATE_IRQS_NUM)
 #define INTC2_IMR_NUM    ((ARCH_MAX_INTERRUPTS + 31) / 32 - 1)
 #define INTC2_I2EIBG_OFF (0x1FE0)
 #define INTC2_EIBD_OFF   (0x2000)

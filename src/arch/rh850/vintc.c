@@ -346,7 +346,7 @@ void vintc_init(struct vm* vm)
 
 void vintc_vcpu_reset(struct vcpu* vcpu)
 {
-    for (size_t i = 0; i < PRIVATE_IRQS_NUM; i++) {
+    for (size_t i = 0; i < INTC_PRIVATE_IRQS_NUM; i++) {
         if (vm_has_interrupt(vcpu->vm, i)) {
             intc_set_trgt(i, vcpu->phys_id);
             intc_set_enable(i, false);
@@ -359,7 +359,7 @@ void vintc_vcpu_reset(struct vcpu* vcpu)
 void vintc_vm_reset(struct vm* vm)
 {
     if (vm->master == cpu()->id) {
-        for (size_t i = PRIVATE_IRQS_NUM; i < PLAT_MAX_INTERRUPTS; i++) {
+        for (size_t i = INTC_PRIVATE_IRQS_NUM; i < PLAT_MAX_INTERRUPTS; i++) {
             if (vm_has_interrupt(vm, i)) {
                 intc_set_trgt(i, cpu()->id);
                 intc_set_enable(i, false);

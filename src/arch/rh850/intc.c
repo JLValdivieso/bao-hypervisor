@@ -48,14 +48,14 @@ volatile struct feinc* feinc_hw[PLAT_CPU_NUM];
 
 void intc_set_pend(irqid_t int_id, bool en)
 {
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         if (en) {
             EIC_SET_EIRFn(intc1_hw->EIC[int_id]);
         } else {
             EIC_CLR_EIRFn(intc1_hw->EIC[int_id]);
         }
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         if (en) {
             EIC_SET_EIRFn(intc2_hw->EIC[intc2_irq_id]);
         } else {
@@ -67,11 +67,11 @@ void intc_set_pend(irqid_t int_id, bool en)
 bool intc_get_pend(irqid_t int_id)
 {
     unsigned int pend = 0;
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         pend = EIC_GET_EIRFn(intc1_hw->EIC[int_id]);
 
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         pend = EIC_GET_EIRFn(intc2_hw->EIC[intc2_irq_id]);
     }
 
@@ -80,10 +80,10 @@ bool intc_get_pend(irqid_t int_id)
 
 void intc_hyp_assign(irqid_t int_id)
 {
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         EIBD_CLR_GM(intc1_hw->EIBD[int_id]);
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_CLR_GM(intc2_hw->EIBD[intc2_irq_id]);
     }
 }
@@ -91,11 +91,11 @@ void intc_hyp_assign(irqid_t int_id)
 void intc_vm_assign(irqid_t int_id, vmid_t vm_id)
 {
     /* assumes calling cpu is configuring this interrupt */
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         EIBD_SET_GM(intc1_hw->EIBD[int_id]);
         EIBD_SET_GPID(intc1_hw->EIBD[int_id], vm_id);
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_SET_GM(intc2_hw->EIBD[intc2_irq_id]);
         EIBD_SET_GPID(intc2_hw->EIBD[intc2_irq_id], vm_id);
 
@@ -105,26 +105,26 @@ void intc_vm_assign(irqid_t int_id, vmid_t vm_id)
 
 void intc_set_trgt(irqid_t int_id, cpuid_t cpu_id)
 {
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         if (cpu()->id != cpu_id) {
             ERROR("setting private interrupt on another core");
         }
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_SET_PEID(intc2_hw->EIBD[intc2_irq_id], cpu_id);
     }
 }
 
 void intc_set_enable(irqid_t int_id, bool en)
 {
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         if (en) {
             EIC_CLR_EIMKn(intc1_hw->EIC[int_id]);
         } else {
             EIC_SET_EIMKn(intc1_hw->EIC[int_id]);
         }
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         if (en) {
             EIC_CLR_EIMKn(intc2_hw->EIC[intc2_irq_id]);
         } else {
@@ -135,10 +135,10 @@ void intc_set_enable(irqid_t int_id, bool en)
 
 void intc_set_prio(irqid_t int_id, unsigned long prio)
 {
-    if (int_id < PRIVATE_IRQS_NUM) {
+    if (int_id < INTC_PRIVATE_IRQS_NUM) {
         EIC_SET_EIPn(intc1_hw->EIC[int_id], prio);
     } else {
-        irqid_t intc2_irq_id = int_id - PRIVATE_IRQS_NUM;
+        irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIC_SET_EIPn(intc2_hw->EIC[intc2_irq_id], prio);
     }
 }
