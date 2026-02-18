@@ -169,21 +169,11 @@ static void emulate_intc_eibd_access(struct emul_access* acc)
     } else {
         unsigned long val = *tgt_reg;
         unsigned long phys_peid = val & 0x7UL;
-        unsigned long virt_peid = INVALID_CPUID;
-        for (size_t i = 0; i < vm->cpu_num; i++) {
-            struct vcpu* vcpu_trgt = vm_get_vcpu(vcpu->vm, i);
-            if(vcpu_trgt == NULL){
-                continue;
-            }
-            if (vcpu_trgt->phys_id == phys_peid) {
-                virt_peid = vcpu_trgt->id;
-                break;
-            }
-        }
-        if (virt_peid != INVALID_CPUID) {
-            val = (val & 0xFFFF0000) | (virt_peid & 0x7UL);
+        unsigned long virt_peid = vm_translate_to_vcpuid(vm, phys_peid);
+        if (virt_peid == INVALID_CPUID) {
+            ERROR("Inconsistent state in intc2\n");
         } else {
-            val = (val & 0xFFFF0000);
+            val = (val & 0xFFFF0000) | (virt_peid & 0x7UL);
         }
 
         val = (val >> (addr_off * 8)) & mask;
