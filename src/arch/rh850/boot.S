@@ -96,10 +96,6 @@ _reset_handler:
     LOAD_ADDR _image_end, r16
     jarl _boot_clear, lp
 
-    /* store CPU_MASTER */
-    LOAD_ADDR CPU_MASTER, r20
-    st.w r11, 0[r20]
-
     /* store image load address in img_addr */
     LOAD_ADDR _image_start, r20
     LOAD_ADDR img_addr, r21
