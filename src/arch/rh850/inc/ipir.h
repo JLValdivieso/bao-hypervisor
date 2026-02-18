@@ -17,6 +17,8 @@
 /* We reserve the last IPIR channel for Bao */
 #define IPI_HYP_IRQ_ID    (IPIR_CH3_IRQ_ID)
 
+typedef enum { IPInEN, IPInFLG, IPInFCLR, IPInREQ, IPInRCLR } ipir_reg_t;
+
 struct ipir_chann {
     uint8_t IPInEN;
     uint8_t pad0[0x4 - 0x1];
@@ -39,11 +41,7 @@ struct ipir_hw {
     } pe[PLAT_CPU_NUM];
 };
 
-void ipir_handle(irqid_t int_id);
 void ipir_send_ipi(cpuid_t cpu_target);
 void ipir_init(void);
-
-bool vipir_emul_handler(struct emul_access* acc);
-void vipir_init(struct vm* vm);
 
 #endif /* __ARCH_IPIR_H__ */
