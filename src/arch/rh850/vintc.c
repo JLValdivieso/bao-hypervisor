@@ -42,7 +42,6 @@ static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, uns
         ERROR("VM tried to access unassigned interrupt");
     }
 
-    /* bit manipulation instruction */
     if (emul_arch_is_bwop(&acc->arch)) {
         volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
         *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
@@ -73,7 +72,6 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
     first_imr_int = reg_idx * 32;
     first_imr_int += 32;
 
-    /* bit manipulation instruction */
     if (emul_arch_is_bwop(&acc->arch)) {
         volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
         *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
@@ -131,8 +129,6 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
         ERROR("VM tried to access unassigned interrupt");
     }
 
-    /* we use 0xFFFF0000 to mask access to virtualization configuration */
-    /* bit manipulation instruction */
     if (emul_arch_is_bwop(&acc->arch)) {
         volatile uint8_t* byte_addr = ((volatile uint8_t*)tgt_reg) + addr_off;
         *byte_addr = emul_arch_bwop_emul_acc(&acc->arch, *byte_addr);
