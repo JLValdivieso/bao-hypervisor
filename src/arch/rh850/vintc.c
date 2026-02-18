@@ -24,7 +24,7 @@ void vintc_inject(struct vcpu* vcpu, irqid_t int_id)
     struct vm* vm = vcpu->vm;
 
     if (!vm_has_interrupt(vm, int_id)) {
-        ERROR("VM tried to access unassigned interrupt");
+        ERROR("Trying to inject unassigned interrupt in VM");
     }
     intc_set_pend(int_id, true);
 }
