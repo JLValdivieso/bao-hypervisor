@@ -10,7 +10,7 @@
 
 #define INTC_PRIVATE_IRQS_NUM 32
 
-struct intc1 {
+struct intc1_unit {
     uint16_t EIC[INTC_PRIVATE_IRQS_NUM];
     uint8_t pad0[0xF0 - 0x40];
     uint32_t IMR;
@@ -25,6 +25,12 @@ struct intc1 {
     uint32_t FIBG;
     uint8_t pad5[0x2F0 - 0x2C4];
     uint32_t IHVCFG;
+    uint8_t pad6[0x4000 - 0x2F8];
+};
+
+struct intc1 {
+    struct intc1_unit self;
+    struct intc1_unit pe[PLAT_CPU_NUM];
 };
 
 #define INTC2_IRQ_NUM    (ARCH_MAX_INTERRUPTS - INTC_PRIVATE_IRQS_NUM)

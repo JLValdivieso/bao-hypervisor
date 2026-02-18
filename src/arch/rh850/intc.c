@@ -50,9 +50,9 @@ void intc_set_pend(irqid_t int_id, bool en)
 {
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
         if (en) {
-            EIC_SET_EIRFn(intc1_hw->EIC[int_id]);
+            EIC_SET_EIRFn(intc1_hw->self.EIC[int_id]);
         } else {
-            EIC_CLR_EIRFn(intc1_hw->EIC[int_id]);
+            EIC_CLR_EIRFn(intc1_hw->self.EIC[int_id]);
         }
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
@@ -68,7 +68,7 @@ bool intc_get_pend(irqid_t int_id)
 {
     unsigned int pend = 0;
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        pend = EIC_GET_EIRFn(intc1_hw->EIC[int_id]);
+        pend = EIC_GET_EIRFn(intc1_hw->self.EIC[int_id]);
 
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
@@ -81,7 +81,7 @@ bool intc_get_pend(irqid_t int_id)
 void intc_hyp_assign(irqid_t int_id)
 {
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        EIBD_CLR_GM(intc1_hw->EIBD[int_id]);
+        EIBD_CLR_GM(intc1_hw->self.EIBD[int_id]);
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_CLR_GM(intc2_hw->EIBD[intc2_irq_id]);
@@ -92,8 +92,8 @@ void intc_vm_assign(irqid_t int_id, vmid_t vm_id)
 {
     /* assumes calling cpu is configuring this interrupt */
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        EIBD_SET_GM(intc1_hw->EIBD[int_id]);
-        EIBD_SET_GPID(intc1_hw->EIBD[int_id], vm_id);
+        EIBD_SET_GM(intc1_hw->self.EIBD[int_id]);
+        EIBD_SET_GPID(intc1_hw->self.EIBD[int_id], vm_id);
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIBD_SET_GM(intc2_hw->EIBD[intc2_irq_id]);
@@ -119,9 +119,9 @@ void intc_set_enable(irqid_t int_id, bool en)
 {
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
         if (en) {
-            EIC_CLR_EIMKn(intc1_hw->EIC[int_id]);
+            EIC_CLR_EIMKn(intc1_hw->self.EIC[int_id]);
         } else {
-            EIC_SET_EIMKn(intc1_hw->EIC[int_id]);
+            EIC_SET_EIMKn(intc1_hw->self.EIC[int_id]);
         }
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
@@ -136,36 +136,22 @@ void intc_set_enable(irqid_t int_id, bool en)
 void intc_set_prio(irqid_t int_id, unsigned long prio)
 {
     if (int_id < INTC_PRIVATE_IRQS_NUM) {
-        EIC_SET_EIPn(intc1_hw->EIC[int_id], prio);
+        EIC_SET_EIPn(intc1_hw->self.EIC[int_id], prio);
     } else {
         irqid_t intc2_irq_id = int_id - INTC_PRIVATE_IRQS_NUM;
         EIC_SET_EIPn(intc2_hw->EIC[intc2_irq_id], prio);
     }
 }
 
-static void intc_map_local_mmio(void)
+static void intc_map_global_mmio(void)
 {
-    /* because we are mapping an alias this could be global mapping actually */
-    vaddr_t intc1_ptr = mem_alloc_map_dev(&cpu()->as, SEC_HYP_PRIVATE, INVALID_VA,
+    vaddr_t intc1_ptr = mem_alloc_map_dev(&cpu()->as, SEC_HYP_GLOBAL, INVALID_VA,
         platform.arch.intc.intc1_addr, NUM_PAGES(sizeof(struct intc1)));
     if (intc1_ptr == INVALID_VA) {
         ERROR("maping intc1 failed");
     }
     intc1_hw = (struct intc1*)intc1_ptr;
 
-    // TODO: I'm mapping FEINC twice
-    vaddr_t feinc_ptr;
-    feinc_ptr = mem_alloc_map_dev(&cpu()->as, SEC_HYP_PRIVATE, INVALID_VA,
-        platform.arch.intc.feinc_addr[cpu()->id], NUM_PAGES(sizeof(struct feinc)));
-    if (feinc_ptr == INVALID_VA) {
-        ERROR("maping feinc_ptr failed");
-    }
-
-    feinc_hw[cpu()->id] = (struct feinc*)feinc_ptr;
-}
-
-static void intc_map_global_mmio(void)
-{
     vaddr_t global_start_addr = platform.arch.intc.intif_addr;
     vaddr_t global_end_addr = platform.arch.intc.intc2_addr + sizeof(struct intc2);
     size_t global_size = global_end_addr - global_start_addr;
@@ -181,15 +167,23 @@ static void intc_map_global_mmio(void)
     intif_hw = (struct intif*)platform.arch.intc.intif_addr;
     eint_hw = (struct eint*)platform.arch.intc.eint_addr;
     fenc_hw = (struct fenc*)platform.arch.intc.fenc_addr;
+}
+
+static void intc_local_init(void)
+{
     feinc_hw[cpu()->id] = (struct feinc*)platform.arch.intc.feinc_addr[cpu()->id];
 }
 
 void intc_init()
 {
-    intc_map_local_mmio();
     if (cpu_is_master()) {
         intc_map_global_mmio();
     }
+    /* wait for global mappings */
+    cpu_sync_and_clear_msgs(&cpu_glb_sync);
+
+    /* setup local pointers */
+    intc_local_init();
 
     cpu_sync_and_clear_msgs(&cpu_glb_sync);
 }
