@@ -87,31 +87,27 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
         unsigned long val = vcpu_readreg(vcpu, acc->reg);
         unsigned long write_val = *tgt_reg;
 
-        for (unsigned int i = first_imr_int; i < first_imr_int + 32; i++) {
-            if (!vm_has_interrupt(vm, i) || (i == IPI_HYP_IRQ_ID)) {
+        for (unsigned int i = 0; i < 32; i++) {
+            if (!vm_has_interrupt(vm, i + first_imr_int)) {
                 continue;
             }
-
-            unsigned int imr_bit = (i % 32);
-            if ((1UL << imr_bit) & val) {
-                write_val |= (1UL << imr_bit);
+            if ((1UL << i) & val) {
+                write_val |= (1UL << i);
             } else {
-                write_val &= ~(1UL << imr_bit);
+                write_val &= ~(1UL << i);
             }
         }
         *tgt_reg = ((write_val & mask) << (addr_off * 8)) | (*tgt_reg & ~(mask << (addr_off * 8)));
     } else {
         unsigned long val = 0;
 
-        for (unsigned int i = first_imr_int; i < first_imr_int + 32; i++) {
-            if (!vm_has_interrupt(vm, i) || (i == IPI_HYP_IRQ_ID)) {
+        for (unsigned int i = 0; i < 32; i++) {
+            if (!vm_has_interrupt(vm, i + first_imr_int)) {
                 continue;
             }
-
-            unsigned int imr_bit = (i % 32);
             unsigned int imr_val = *tgt_reg;
-            if ((1UL << imr_bit) & imr_val) {
-                val |= (1UL << imr_bit);
+            if ((1UL << i) & imr_val) {
+                val |= (1UL << i);
             }
         }
 
