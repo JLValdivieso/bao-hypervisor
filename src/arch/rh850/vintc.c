@@ -25,6 +25,10 @@ extern volatile struct feinc* feinc_hw[PLAT_CPU_NUM];
 #define INTC2_EEIC_OFFSET 0x4000
 #define INTC2_OFFSET_MASK 0x7000
 
+#define INTC_EIBD_DIRECT_ACC_MASK (0xFFFF0000UL)
+#define INTC_EIBD_HYP_MASK        (0xFFF8UL)
+#define INTC_EIBD_PEID_MASK       (0x7UL)
+
 void vintc_inject(struct vcpu* vcpu, irqid_t int_id)
 {
     if (!vm_has_interrupt(vcpu->vm, int_id)) {
@@ -164,7 +168,8 @@ static void emulate_intc_eibd_access(struct emul_access* acc)
             /* in case the vcpu_id is invalid sanitize the write by using the first vcpu */
             phys_peid = vm_translate_to_pcpuid(vm, 0);
         }
-        val = (val & 0xFFFF0000) | (*tgt_reg & 0xFFF8) | (phys_peid & 0x7UL);
+        val = (val & INTC_EIBD_DIRECT_ACC_MASK) | (*tgt_reg & INTC_EIBD_HYP_MASK) |
+            (phys_peid & INTC_EIBD_PEID_MASK);
         *tgt_reg = ((val & mask) << (addr_off * 8)) | (*tgt_reg & ~(mask << (addr_off * 8)));
     } else {
         unsigned long val = *tgt_reg;
@@ -173,7 +178,7 @@ static void emulate_intc_eibd_access(struct emul_access* acc)
         if (virt_peid == INVALID_CPUID) {
             ERROR("Inconsistent state in intc2\n");
         } else {
-            val = (val & 0xFFFF0000) | (virt_peid & 0x7UL);
+            val = (val & INTC_EIBD_DIRECT_ACC_MASK) | (virt_peid & INTC_EIBD_PEID_MASK);
         }
 
         val = (val >> (addr_off * 8)) & mask;
