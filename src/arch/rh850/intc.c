@@ -171,8 +171,7 @@ static void intc_map_global_mmio(void)
     size_t global_size = global_end_addr - global_start_addr;
     size_t global_npages = NUM_PAGES(global_size);
 
-    vaddr_t global_ptr;
-    global_ptr =
+    vaddr_t global_ptr =
         mem_alloc_map_dev(&cpu()->as, SEC_HYP_GLOBAL, INVALID_VA, global_start_addr, global_npages);
     if (global_ptr == INVALID_VA) {
         ERROR("maping global interrupt controller region failed");
