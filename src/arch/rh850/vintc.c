@@ -19,6 +19,12 @@ extern volatile struct eint* eint_hw;
 extern volatile struct fenc* fenc_hw;
 extern volatile struct feinc* feinc_hw[PLAT_CPU_NUM];
 
+#define INTC2_EIC_OFFSET  0x0000
+#define INTC2_IMR_OFFSET  0x1000
+#define INTC2_EIBD_OFFSET 0x2000
+#define INTC2_EEIC_OFFSET 0x4000
+#define INTC2_OFFSET_MASK 0x7000
+
 void vintc_inject(struct vcpu* vcpu, irqid_t int_id)
 {
     if (!vm_has_interrupt(vcpu->vm, int_id)) {
@@ -35,11 +41,16 @@ static inline bool is_addr_aligned_to_width(unsigned long addr, unsigned long wi
     return (addr & mask) == 0;
 }
 
-static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, unsigned long mask)
+static void emulate_intc_eic_access(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
     struct vm* vm = vcpu->vm;
 
+    size_t acc_intc2_offset = acc->addr - (unsigned long)intc2_hw;
+    unsigned long bot = offsetof(struct intc2, EIC);
+    size_t reg_idx = (ALIGN(acc_intc2_offset - bot, 2)) / 2;
+
+    unsigned long mask = BIT_MASK(0, acc->width);
     size_t addr_off = acc->addr & 0x1UL;
     volatile uint16_t* tgt_reg = &(intc2_hw->EIC[reg_idx]);
     irqid_t int_id = reg_idx + 32;
@@ -67,10 +78,16 @@ static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, uns
     }
 }
 
-static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uint32_t mask)
+static void emulate_intc_imr_access(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
     struct vm* vm = vcpu->vm;
+
+    size_t acc_intc2_offset = acc->addr - (unsigned long)intc2_hw;
+    unsigned long bot = offsetof(struct intc2, IMR);
+    size_t reg_idx = (ALIGN(acc_intc2_offset - bot, 4)) / 4;
+
+    unsigned long mask = BIT_MASK(0, acc->width);
     size_t addr_off = acc->addr & 0x3UL;
     irqid_t first_imr_int = 0;
     volatile uint32_t* tgt_reg = &(intc2_hw->IMR[reg_idx]);
@@ -117,11 +134,16 @@ static void emulate_intc_imr_access(struct emul_access* acc, size_t reg_idx, uin
     }
 }
 
-static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, uint32_t mask)
+static void emulate_intc_eibd_access(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
     struct vm* vm = vcpu->vm;
 
+    size_t acc_intc2_offset = acc->addr - (unsigned long)intc2_hw;
+    unsigned long bot = offsetof(struct intc2, EIBD);
+    size_t reg_idx = (ALIGN(acc_intc2_offset - bot, 4)) / 4;
+
+    unsigned long mask = BIT_MASK(0, acc->width);
     size_t addr_off = acc->addr & 0x3UL;
     irqid_t int_id = 0;
     volatile uint32_t* tgt_reg = &(intc2_hw->EIBD[reg_idx]);
@@ -173,11 +195,16 @@ static void emulate_intc_eibd_access(struct emul_access* acc, size_t reg_idx, ui
     }
 }
 
-static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, uint32_t mask)
+static void emulate_intc_eeic_access(struct emul_access* acc)
 {
     struct vcpu* vcpu = cpu()->vcpu;
     struct vm* vm = vcpu->vm;
 
+    size_t acc_intc2_offset = acc->addr - (unsigned long)intc2_hw;
+    unsigned long bot = offsetof(struct intc2, EEIC);
+    size_t reg_idx = (ALIGN(acc_intc2_offset - bot, 4)) / 4;
+
+    unsigned long mask = BIT_MASK(0, acc->width);
     size_t addr_off = acc->addr & 0x3UL;
     volatile uint32_t* tgt_reg = &(intc2_hw->EEIC[reg_idx]);
     irqid_t int_id = reg_idx + 32;
@@ -215,39 +242,23 @@ static bool vintc2_emul_handler(struct emul_access* acc)
         return false;
     }
 
-    size_t acc_offset = acc->addr - platform.arch.intc.intc2_addr;
-    unsigned long mask = BIT_MASK(0, acc->width);
-
-    size_t intc2_eic_bot = offsetof(struct intc2, EIC);
-    size_t intc2_eic_top = sizeof(((struct intc2*)NULL)->EIC) + intc2_eic_bot;
-    size_t intc2_eic_idx = (ALIGN(acc_offset - intc2_eic_bot, 2)) / 2;
-    if (acc_offset >= intc2_eic_bot && acc_offset < intc2_eic_top) {
-        emulate_intc_eic_access(acc, intc2_eic_idx, mask);
-        return true;
-    }
-
-    size_t intc2_imr_bot = offsetof(struct intc2, IMR);
-    size_t intc2_imr_top = sizeof(((struct intc2*)NULL)->IMR) + intc2_imr_bot;
-    size_t intc2_imr_idx = (ALIGN(acc_offset - intc2_imr_bot, 4)) / 4;
-    if (acc_offset >= intc2_imr_bot && acc_offset < intc2_imr_top) {
-        emulate_intc_imr_access(acc, intc2_imr_idx, mask);
-        return true;
-    }
-
-    size_t intc2_eibd_bot = offsetof(struct intc2, EIBD);
-    size_t intc2_eibd_top = sizeof(((struct intc2*)NULL)->EIBD) + intc2_eibd_bot;
-    size_t intc2_eibd_idx = (ALIGN(acc_offset - intc2_eibd_bot, 4)) / 4;
-    if (acc_offset >= intc2_eibd_bot && acc_offset < intc2_eibd_top) {
-        emulate_intc_eibd_access(acc, intc2_eibd_idx, mask);
-        return true;
-    }
-
-    size_t intc2_eeic_bot = offsetof(struct intc2, EEIC);
-    size_t intc2_eeic_top = sizeof(((struct intc2*)NULL)->EEIC) + intc2_eeic_bot;
-    size_t intc2_eeic_idx = (ALIGN(acc_offset - intc2_eeic_bot, 4)) / 4;
-    if (acc_offset >= intc2_eeic_bot && acc_offset < intc2_eeic_top) {
-        emulate_intc_eeic_access(acc, intc2_eeic_idx, mask);
-        return true;
+    unsigned long offset = (acc->addr - (unsigned long)intc2_hw);
+    unsigned long base_reg_id = (offset) & (INTC2_OFFSET_MASK);
+    switch (base_reg_id) {
+        case INTC2_EIC_OFFSET:
+            emulate_intc_eic_access(acc);
+            break;
+        case INTC2_IMR_OFFSET:
+            emulate_intc_imr_access(acc);
+            break;
+        case INTC2_EIBD_OFFSET:
+            emulate_intc_eibd_access(acc);
+            break;
+        case INTC2_EEIC_OFFSET:
+            emulate_intc_eeic_access(acc);
+            break;
+        default:
+            return false;
     }
 
     return true;
