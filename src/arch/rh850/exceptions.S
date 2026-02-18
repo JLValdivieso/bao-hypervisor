@@ -17,7 +17,7 @@
     stsr 29, r31, 0                /* get cpu* from FEWR */
     ld.w CPU_VCPU_OFF[r31], r31    /* get vcpu* */
     add VCPU_REGS_OFF, r31
-    st.dw r0,  0[r31]
+    st.w  r1,  3[r31]
     st.dw r2,  8[r31]
     st.dw r4,  16[r31]
     st.dw r6,  24[r31]
@@ -60,7 +60,7 @@
     jarl _restore_pc, lp
     mov r30, r31
 
-    ld.dw 0[r31], r0
+    ld.w  4[r31], r1
     ld.dw 8[r31], r2
     ld.dw 16[r31], r4
     ld.dw 24[r31], r6
