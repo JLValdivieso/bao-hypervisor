@@ -29,6 +29,14 @@ void vintc_inject(struct vcpu* vcpu, irqid_t int_id)
     intc_set_pend(int_id, true);
 }
 
+static inline bool is_addr_aligned_to_width(unsigned long addr, unsigned long width_in_bits)
+{
+    /* divide width by 8 to get bytes. subtract 1 to get aligment mask */
+    unsigned long mask = ((width_in_bits / 8)-1);
+    /* if addr & mask is non-zero access is unaligned */
+    return (addr & mask) == 0;
+}
+
 static void emulate_intc_eic_access(struct emul_access* acc, size_t reg_idx, unsigned long mask)
 {
     struct vcpu* vcpu = cpu()->vcpu;
@@ -218,6 +226,11 @@ static unsigned long width_to_mask(unsigned long width)
 static bool vintc2_emul_handler(struct emul_access* acc)
 {
     if (acc->width > 32) {
+        return false;
+    }
+
+    if(!is_addr_aligned_to_width(acc->addr, acc->width)){
+        /* Access addr is not aligned to access width */
         return false;
     }
 
