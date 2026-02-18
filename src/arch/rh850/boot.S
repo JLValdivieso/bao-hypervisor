@@ -14,7 +14,6 @@
 .endm
 
 .extern platform
-.extern clear_rwx_regions
 
 /**
  * The following code MUST be at the base of the image, as this is bao's entrypoint. Therefore
