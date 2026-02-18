@@ -136,13 +136,13 @@ _hyp_vector_table:
     br    _guest_exception,    /* HVTRAP; Guest */
 
     .balign 0x10
-    br    _guest_exception    /* FETRAP ; Guest? */
+    br    _guest_exception    /* FETRAP ; Guest */
 
     .balign 0x10
-    br    _guest_exception    /* TRAP0 ; Guest? */
+    br    _guest_exception    /* TRAP0 ; Guest */
 
     .balign 0x10
-    br    _guest_exception    /* TRAP1 ; Guest? */
+    br    _guest_exception    /* TRAP1 ; Guest */
 
     .balign 0x10
     br    _host_exception        /* RIE */
@@ -258,7 +258,7 @@ _Interrupt_EI:
     VM_EXIT
 
     /* copy int_id to r6 */
-    stsr 13, r6, 0    /* EIIC (TODO: FEIC ?) */
+    stsr 13, r6, 0    /* EIIC (TODO: FEIC) */
     mov 0x7FF, r20
     and r20, r6
 
