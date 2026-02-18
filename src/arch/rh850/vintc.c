@@ -206,19 +206,6 @@ static void emulate_intc_eeic_access(struct emul_access* acc, size_t reg_idx, ui
     }
 }
 
-static unsigned long width_to_mask(unsigned long width)
-{
-    unsigned long mask = 0;
-    if(width == 8) {
-        mask = 0xFFUL;
-    } else if(width == 16) {
-        mask = 0xFFFFUL;
-    } else if (width == 32) {
-        mask = 0xFFFFFFFFUL;
-    }
-    return mask;
-}
-
 static bool vintc2_emul_handler(struct emul_access* acc)
 {
     if (acc->width > 32) {
@@ -231,7 +218,7 @@ static bool vintc2_emul_handler(struct emul_access* acc)
     }
 
     size_t acc_offset = acc->addr - platform.arch.intc.intc2_addr;
-    unsigned long mask = width_to_mask(acc->width);
+    unsigned long mask = BIT_MASK(0, acc->width);
 
     size_t intc2_eic_bot = offsetof(struct intc2, EIC);
     size_t intc2_eic_top = sizeof(((struct intc2*)NULL)->EIC) + intc2_eic_bot;
