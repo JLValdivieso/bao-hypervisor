@@ -212,6 +212,7 @@ void mpu_arch_init(void)
 void mpu_arch_enable(void)
 {
     srs_mpm_write(MPM_SVP | MPM_MPE);
+    synci();
 }
 
 void mpu_arch_disable(void)

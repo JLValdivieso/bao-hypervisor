@@ -13,8 +13,10 @@ void vmm_arch_init(void)
     /* HVCFG.HVE is set after reset */
 
     /* configure Hypervisor MPIDs for memory protection */
+    mpu_arch_disable();
     srs_mpid7_write(HYP_SPID);
     srs_spid_write(HYP_SPID);
+    mpu_arch_enable();
 
     srs_gmcfg_write(GMCFG_GCU1 | GMCFG_GCU0 | GMCFG_GSYSE | GMCFG_HMP);
 
