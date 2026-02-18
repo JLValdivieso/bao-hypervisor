@@ -21,9 +21,7 @@ extern volatile struct feinc* feinc_hw[PLAT_CPU_NUM];
 
 void vintc_inject(struct vcpu* vcpu, irqid_t int_id)
 {
-    struct vm* vm = vcpu->vm;
-
-    if (!vm_has_interrupt(vm, int_id)) {
+    if (!vm_has_interrupt(vcpu->vm, int_id)) {
         ERROR("Trying to inject unassigned interrupt in VM");
     }
     intc_set_pend(int_id, true);
