@@ -10,6 +10,8 @@
 
 #define INTC_PRIVATE_IRQS_NUM 32
 
+#define INTC_MAX_PRIO 0x0
+
 struct intc1_unit {
     uint16_t EIC[INTC_PRIVATE_IRQS_NUM];
     uint8_t pad0[0xF0 - 0x40];

@@ -20,7 +20,7 @@ void interrupts_arch_init()
 void interrupts_arch_enable(irqid_t int_id, bool en)
 {
     intc_set_enable(int_id, en);
-    intc_set_prio(int_id, 0x01);
+    intc_set_prio(int_id, INTC_MAX_PRIO);
     intc_set_trgt(int_id, cpu()->id);
 }
 
