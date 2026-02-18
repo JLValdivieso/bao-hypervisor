@@ -38,8 +38,21 @@
     stsr 28, r31, 0
     st.w r31, 124[r30]
 
-    /* save PC */
-    jarl _save_pc, lp
+    /**
+     * Save PC from EIPC or FEPC depending on the exception type
+     * r30: vcpu register struct base address
+     * uses r20
+     */
+    stsr 5, r20, 0
+    andi 0x80, r20, r20
+    cmp r0, r20
+    be 1f
+    stsr 2, r20, 0    /* FEPC */
+    br 2f
+1:
+    stsr 0, r20, 0    /* EIPC */
+2:
+    st.w r20, 128[r30]
 
     /* restore stack pointer */
     stsr 29, r20, 0
@@ -56,8 +69,21 @@
     ld.w CPU_VCPU_OFF[r30], r30
     add VCPU_REGS_OFF, r30
 
-    /* restore PC */
-    jarl _restore_pc, lp
+    /**
+     * Restore PC to EIPC or FEPC depending on the exception type
+     * r30: vcpu register struct base address
+     * uses r20 and r21
+     */
+    ld.w 128[r30], r20
+    stsr 5, r21, 0
+    andi 0x80, r21, r21
+    cmp r0, r21
+    be 1f
+    ldsr r20, 2, 0     /* set FEPC */
+    br 2f
+1:
+    ldsr r20, 2, 0     /* set EIPC */
+2:
     mov r30, r31
 
     ld.w  4[r31], r1
@@ -81,60 +107,21 @@
     ld.w 124[r31], r31
     ldsr r31, 28, 0
 
-    /* select ret instruction */
-    br _select_xxret
-.endm
-
-/**
- * Save PC from EIPC or FEPC depending on the exception type
- * r30: vcpu register struct base address
- * uses r20
- */
-_save_pc:
-    stsr 5, r20, 0
-    andi 0x80, r20, r20
-    cmp r0, r20
-    be _save_ei
-    stsr 2, r20, 0    /* FEPC */
-    br _save_pc_exit
-_save_ei:
-    stsr 0, r20, 0    /* EIPC */
-_save_pc_exit:
-    st.w r20, 128[r30]
-    jmp [lp]
-
-/**
- * Restore PC to EIPC or FEPC depending on the exception type
- * r30: vcpu register struct base address
- * uses r20 and r21
- */
-_restore_pc:
-    ld.w 128[r30], r20
-    stsr 5, r21, 0
-    andi 0x80, r21, r21
-    cmp r0, r21
-    be _restore_ei
-    ldsr r20, 2, 0     /* set FEPC */
-    br _restore_pc_exit
-_restore_ei:
-    ldsr r20, 2, 0     /* set EIPC */
-_restore_pc_exit:
-    jmp [lp]
-
-/**
- * Execute eiret or feret depending on the exception type
- * and restores r31 from EIWR
- */
-_select_xxret:
+    /**
+     * Execute eiret or feret depending on the exception type
+     * and restores r31 from EIWR
+     */
     stsr 5, r31, 0
     andi 0x80, r31, r31
     cmp r0, r31
-    be _ei_ret
+    be 1f
     stsr 28, r31, 0
     feret
-_ei_ret:
+1:
     stsr 28, r31, 0
     eiret
+.endm
+
 
 .balign 0x200
 .global _hyp_vector_table
