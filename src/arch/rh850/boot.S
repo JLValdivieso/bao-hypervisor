@@ -6,6 +6,7 @@
 #include <bao.h>
 #include <asm_defs.h>
 #include <platform_defs.h>
+#include <plat/platform.h>
 
 .macro LOAD_ADDR    sym, reg
     movhi hi(\sym), r0, \reg
@@ -70,16 +71,16 @@ _reset_handler:
     ldsr r0, 17, 5      /* set MPBK.BK = 0 */
     jarl _clear_mpu, lp
 
-    /* check if current CPU is CPU_MASTER */
-    cmp r11, r10
-    bne _clear_cpu
-
     /* enable interrupt virtualization support,
     recommended at CPU initialization after reset */
-    mov 0xFFFC402F0, r20
+    mov PLAT_INTC1_ADDR, r20
+    add PLAT_INTC1_IHVCFG_OFFSET, r20
     mov 0x1, r21
     st.w r21, 0[r20]    /* IHVCFG.IHVE = 0x1 */
 
+    /* check if current CPU is CPU_MASTER */
+    cmp r11, r10
+    bne _clear_cpu
     /* initialize RAM defined in plat desc */
     LOAD_ADDR platform, r15
     LOAD_ADDR _data_vma_start, r16
