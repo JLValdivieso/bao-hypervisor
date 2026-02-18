@@ -3,13 +3,13 @@
  * Copyright (c) Bao Project and Contributors. All rights reserved.
  */
 
-#include "arch/emul.h"
-#include "types.h"
 #include <vipir.h>
 #include <emul.h>
 #include <vm.h>
 #include <cpu.h>
 #include <ipir.h>
+#include <spinlock.h>
+#include <types.h>
 
 #define IPIR_GET_CHANN(o)       (((o) & 0xE0) >> 5)
 #define IPIR_IS_SELF(o)         ((((o) & 0xF00) >> 11) == 0)
@@ -18,6 +18,8 @@
 #define IPIR_REG_OFFSET_MASK           (0x1f)
 
 extern volatile struct ipir_hw* ipir;
+
+static spinlock_t ipir_lock[PLAT_CPU_NUM][IPIR_NUM_CHANNELS] = { SPINLOCK_INITVAL };
 
 static bool vipir_emul_handler(struct emul_access* acc)
 {
@@ -44,6 +46,8 @@ static bool vipir_emul_handler(struct emul_access* acc)
         }
         pe_idx = vm_translate_to_pcpuid(vm, virt_peid);
     }
+
+    spin_lock(&ipir_lock[pe_idx][chan_idx]);
 
     switch (acc_offset & IPIR_REG_OFFSET_MASK) {
         case offsetof(struct ipir_chann, IPInEN):
@@ -88,6 +92,9 @@ static bool vipir_emul_handler(struct emul_access* acc)
             }
         }
     }
+
+    spin_unlock(&ipir_lock[pe_idx][chan_idx]);
+
     return true;
 }
 
