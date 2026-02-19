@@ -7,6 +7,7 @@
 #include <interrupts.h>
 #include <cpu.h>
 #include <fences.h>
+#include <printk.h>
 
 size_t PLIC_IMPL_INTERRUPTS;
 
@@ -18,13 +19,14 @@ static size_t plic_scan_max_int(void)
 {
     size_t res = 0;
     for (size_t i = 1; i < PLIC_MAX_INTERRUPTS; i++) {
-        plic_global->prio[i] = ~0U;
-        if (plic_global->prio[i] == 0) {
+       plic_global->prio[i] = 7;
+        if (plic_global->prio[i] == -1) {
             res = i - 1;
             break;
         }
         plic_global->prio[i] = 0;
     }
+    // console_printk("Number of interruptions scanned: %d\n\r", res);
     return res;
 }
 

@@ -1,0 +1,1 @@
+boards-objs-y+=cheshire_desc.o
