@@ -35,4 +35,9 @@ static inline void fence_sync(void)
     __asm__ volatile("fence iorw, iorw\n\t" ::: "memory");
 }
 
+static inline void fencei()
+{
+    asm volatile("fence.i" ::: "memory");
+}
+
 #endif /* __FENCES_ARCH_H__ */
