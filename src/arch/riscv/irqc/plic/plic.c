@@ -20,7 +20,7 @@ static size_t plic_scan_max_int(void)
     size_t res = 0;
     for (size_t i = 1; i < PLIC_MAX_INTERRUPTS; i++) {
        plic_global->prio[i] = 7;
-        if (plic_global->prio[i] == -1) {
+        if (plic_global->prio[i] == 0xFFFFFFFF) {
             res = i - 1;
             break;
         }
