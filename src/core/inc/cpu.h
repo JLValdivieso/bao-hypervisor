@@ -103,8 +103,8 @@ static inline void cpu_sync_barrier(struct cpu_synctoken* token)
     size_t next_count = 0;
 
     while (!token->ready) {
-        fence_ord();
-        fencei();
+        // fence_ord();
+        // fencei();
     }
 
     spin_lock(&token->lock);
@@ -113,8 +113,8 @@ static inline void cpu_sync_barrier(struct cpu_synctoken* token)
     spin_unlock(&token->lock);
 
     while (token->count < next_count) { 
-        fence_ord();
-        fencei();
+        // fence_ord();
+        // fencei();
     }
 }
 
@@ -123,8 +123,8 @@ static inline void cpu_sync_and_clear_msgs(struct cpu_synctoken* token)
     size_t next_count = 0;
 
     while (!token->ready) {
-        fence_ord();
-        fencei();
+        // fence_ord();
+        // fencei();
     }
 
     spin_lock(&token->lock);
@@ -133,8 +133,8 @@ static inline void cpu_sync_and_clear_msgs(struct cpu_synctoken* token)
     spin_unlock(&token->lock);
 
     while (token->count < next_count) {
-        fence_ord();
-        fencei();
+        // fence_ord();
+        // fencei();
         if (!cpu()->handling_msgs) {
             cpu_msg_handler();
         }
@@ -144,8 +144,8 @@ static inline void cpu_sync_and_clear_msgs(struct cpu_synctoken* token)
         cpu_msg_handler();
     }
 
-    fence_ord();
-    fencei();
+    // fence_ord();
+    // fencei();
     cpu_sync_barrier(token);
 }
 
