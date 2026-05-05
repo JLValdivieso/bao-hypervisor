@@ -5,7 +5,7 @@ ARCH_SUB?=riscv64
 
 ifeq ($(ARCH_SUB), riscv64)
 CROSS_COMPILE ?= riscv64-unknown-elf-
-riscv_march:=rv64imac_zicsr
+riscv_march:=rv64imac_zicsr_zifencei
 riscv_mabi:=lp64
 ld_emulation:=elf64lriscv
 else ifeq ($(ARCH_SUB), riscv32)

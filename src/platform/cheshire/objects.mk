@@ -1,1 +1,1 @@
-boards-objs-y+=cheshire_desc.o
+boards-objs-y+=cheshire_desc.o cache.o
